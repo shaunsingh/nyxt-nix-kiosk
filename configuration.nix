@@ -59,6 +59,7 @@
     git
     wget
     chromium
+    vscode-fhs
   ];
 
   # backup kde
