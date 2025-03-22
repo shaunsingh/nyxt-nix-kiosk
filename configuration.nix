@@ -7,10 +7,8 @@
 }: {
 
   imports = [
-    ./hardware-configuration.nix # hardware scan
-    ./apple-silicon-support      # asahi support
-    ./kde                        # base kde install to develop with
-    #./nyxt                       # nyxt kiosk under gamescope
+    ./apple-silicon-support  # asahi support
+    ./nyxt4-gamescope        # nyxt kiosk under gamescope
   ];
 
   # recommended for asahi
@@ -23,8 +21,11 @@
     # For ` to < and ~ to > (for those with US keyboards)
     extraModprobeConfig = ''
       options hid_apple iso_layout=0
-    '';.
+    '';
   };
+
+  # default is impure, use local firmware
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
   # wpa_supplicant + wpa3 iffy
   networking.wireless.iwd = {
@@ -51,8 +52,23 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  # allow using proprietary packages
+  # allow using proprietary packages + install essentials
   nixpkgs.config.allowUnfree = true;
+  environment.systemPackages = with pkgs; [
+    vim  
+    git
+    wget
+    chromium
+  ];
+
+  # backup kde
+  services = {
+    desktopManager.plasma6.enable = true;
+    displayManager.sddm = {
+      enable = true;
+      wayland.enable = true;
+    };
+  };
 
   # default user config
   users.users = {
@@ -60,13 +76,6 @@
       isNormalUser = true;
       extraGroups = ["wheel"];
     };
-  };
-
-  displayManager = {
-     sddm = {
-       enable = true;
-       wayland.enable = true;
-     };
   };
 
   # state
