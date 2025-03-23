@@ -408,7 +408,300 @@
       :padding-left "9px"
       :margin "3px")))))
 
+;;; STARTPAGE
+
+(defparameter list-of-fruits
+  (list "abiu"
+        "açaí"
+        "acerola"
+        "ackee"
+        "african cucumber"
+        "apple"
+        "apricot"
+        "avocado"
+        "banana"
+        "bilberry"
+        "blackberry"
+        "blackcurrant"
+        "black sapote"
+        "blueberry"
+        "boysenberry"
+        "breadfruit"
+        "buddha's hand (fingered citron)"
+        "cactus pear"
+        "canistel"
+        "cempedak"
+        "cherimoya (Custard Apple)"
+        "cherry"
+        "chico fruit"
+        "cloudberry"
+        "coco De Mer"
+        "coconut"
+        "crab apple"
+        "cranberry"
+        "currant"
+        "damson"
+        "date"
+        "dragonfruit (or Pitaya)"
+        "durian"
+        "egg Fruit"
+        "elderberry"
+        "feijoa"
+        "fig"
+        "finger Lime (or Caviar Lime)"
+        "goji berry"
+        "gooseberry"
+        "grape"
+        "raisin"
+        "grapefruit"
+        "grewia asiatica (phalsa or falsa)"
+        "guava"
+        "hala Fruit"
+        "honeyberry"
+        "huckleberry"
+        "jabuticaba"
+        "jackfruit"
+        "jambul"
+        "japanese plum"
+        "jostaberry"
+        "jujube"
+        "juniper berry"
+        "kaffir Lime"
+        "kiwano (horned melon)"
+        "kiwifruit"
+        "kumquat"
+        "lemon"
+        "lime"
+        "loganberry"
+        "longan"
+        "loquat"
+        "lulo"
+        "lychee"
+        "magellan Barberry"
+        "mamey Apple"
+        "mamey Sapote"
+        "mango"
+        "mangosteen"
+        "marionberry"
+        "melon"
+        "cantaloupe"
+        "galia melon"
+        "honeydew"
+        "mouse melon"
+        "musk melon"
+        "watermelon"
+        "miracle fruit"
+        "monstera deliciosa"
+        "mulberry"
+        "nance"
+        "nectarine"
+        "orange"
+        "blood orange"
+        "clementine"
+        "mandarine"
+        "tangerine"
+        "papaya"
+        "passionfruit"
+        "pawpaw"
+        "peach"
+        "pear"
+        "persimmon"
+        "plantain"
+        "plum"
+        "prune (dried plum)"
+        "pineapple"
+        "pineberry"
+        "plumcot (or Pluot)"
+        "pomegranate"
+        "pomelo"
+        "purple mangosteen"
+        "quince"
+        "raspberry"
+        "salmonberry"
+        "rambutan (or Mamin Chino)"
+        "redcurrant"
+        "rose apple"
+        "salal berry"
+        "salak"
+        "satsuma"
+        "shine Muscat or Vitis Vinifera"
+        "sloe or Hawthorn Berry"
+        "soursop"
+        "star apple"
+        "star fruit"
+        "strawberry"
+        "surinam cherry"
+        "tamarillo"
+        "tamarind"
+        "tangelo"
+        "tayberry"
+        "ugli fruit"
+        "white currant"
+        "white sapote"
+        "yuzu"
+        "bell pepper"
+        "chile pepper"
+        "corn kernel"
+        "cucumber"
+        "eggplant"
+        "jalapeño"
+        "olive"
+        "pea"
+        "pumpkin"
+        "squash"
+        "tomato"
+        "zucchini"))
+
+;; nice words
+(defparameter list-of-pretty-words
+  (list "lovely"
+        "wonderful"
+        "delightful"
+        "beautiful"
+        "pleasant"
+        "adorable"
+        "sweet"
+        "delicious"
+        "charming"
+        "fantastic"
+        "gorgeous"
+        "heavenly"
+        "magnificent"
+        "radiant"
+        "splendid"
+        "exquisite"
+        "enchanting"
+        "serene"
+        "blissful"
+        "harmonious"
+        "majestic"
+        "tranquil"
+        "whimsical"
+        "ethereal"
+        "celestial"
+        "idyllic"
+        "mesmerizing"
+        "spellbinding"
+        "captivating"
+        "fascinating"
+        "riveting"
+        "enthralling"
+        "mesmerizing"
+        "inspiring"))
+
+;; have some alliteration word fun
+(defun fruit-of-the-day-message ()
+  (flet ((capitalize-word (word)
+           (concatenate 'string (string-upcase (subseq word 0 1))
+                              (subseq word 1))))
+    (let* ((current-time (local-time:now))
+           (current-day (aref local-time:+day-names+
+                              (local-time:timestamp-day-of-week current-time)))
+           (current-fruit (nth (mod (local-time:day-of current-time)
+                                    (length list-of-fruits))
+                               list-of-fruits))
+           (matching-words (remove-if-not (lambda (word)
+                                            (char= (char word 0)
+                                                   (char current-fruit 0)))
+                                          list-of-pretty-words))
+           (word (if matching-words
+                     (nth (random (length matching-words)) matching-words)
+                     (nth (random (length list-of-pretty-words))
+                          list-of-pretty-words))))
+      (format nil "Have ~A ~A ~A ~A!"
+              (if (member (char (string word) 0) '(#\a #\e #\i #\o #\u))
+                  "an" "a")
+              (capitalize-word word)
+              (capitalize-word current-fruit)
+              current-day))))
+
+;; stolen from time.lisp
+(defun sort-by-time (sequence &key (key #'last-access))
+  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
+  (sort sequence #'local-time:timestamp> :key key))
+
+;; now to bring it all together
+(define-internal-page-command-global startpage ()
+    (buffer "*startpage*")
+  "my custom startpage"
+  (flet ((list-bookmarks (&key (limit 6) (separator " → "))
+           (spinneret:with-html-string
+             (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
+               (alexandria:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
+                 (dolist (bookmark (serapeum:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+                   (:li (title bookmark) separator
+                        (:a :href (render-url (url bookmark))
+                            (render-url (url bookmark)))))
+                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+    (let ((current-year (local-time:timestamp-year (local-time:now)))
+          (dashboard-style (theme:themed-css (theme *browser*)
+                              `("#motto"
+                                :font-size "27px"
+                                :margin"18px"
+                                :margin-left "3px"
+                                :color ,*base08*)
+                              `("#copyright"
+                                :position "absolute"
+                                :text-align "right"
+                                :bottom "1.5em"
+                                :right "1.5em"))))
+     (spinneret:with-html-string
+       (:nstyle dashboard-style)
+       (:div :id "container"
+        (:h1 "Welcome to " (:span :id "subtitle" "NYXT ☺"))
+        (:div :id "buttons"
+         (:nbutton :text "Restore Session"
+           (nyxt::restore-history-by-name))
+         (:nbutton :text "Open Repl"
+           (nyxt/repl-mode:repl))
+         (:nbutton :text "View Changelog"
+           (nyxt:changelog))
+         (:nbutton :text "View Bookmarks"
+           (nyxt/bookmark-mode:list-bookmarks))
+         (:nbutton :text "View Annotations"
+           (nyxt/annotate-mode:show-annotations)))
+        (:div :id "motto"
+         "私たちのミッションは"
+         (:br)
+         "先端工学を用いて上質で"
+         (:br)
+         "機能的なデザインの"
+         (:br)
+         "製品を作り出すことです。")
+        (:h2 "Recents")
+        (:h3 "Bookmarks")
+        (:ul (:raw (list-bookmarks :limit 9)))
+        (:h3 "History")
+        (:ul (:raw (nyxt::history-html-list :limit 9)))
+        (:h2 (fruit-of-the-day-message))
+        (:div :id "copyright"
+          (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
+          (:br)
+          (format nil "lisp ~a ~a" (lisp-implementation-type) (lisp-implementation-version))
+          (:br)
+          (format nil "host ~a@~a" (software-type) (software-version))
+          (:br)
+          (format nil "Atlas Engineer LLC, 2018-~a" current-year)
+          (:br)
+          (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+)))))))
+
+;; set default url to startpage
+(define-configuration browser
+  ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
+
 ;;; COMMANDS
+
+(define-panel-command-global vsplit (&key (url (quri:render-uri (url (current-buffer)))))
+    (panel "*Duplicate panel*" :right)
+  "Duplicate the current buffer URL in the panel buffer on the right.
+
+A poor man's vsplit :("
+  (setf 
+    (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+  (run-thread "URL loader"
+    (sleep 0.3)
+    (buffer-load (quri:uri url) :buffer panel))
+  "")
 
 (define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
     (panel "*Translate panel*" :right)
@@ -426,7 +719,6 @@
  'search-translate-selection
  "Translate Selection")
 
-;; open markdown preview in a split
 (defun my-prompt-for-file ()
   (uiop:native-namestring
    (pathname
@@ -484,6 +776,94 @@
     (buffer-load (quri:uri "http://localhost:7681/")
                  :buffer panel))
   "")
+
+(define-panel-command-global zola-preview () 
+  (panel "*zola preview*" :right) 
+  "Open the Zola preview of the current markdown file on the right buffer"
+  (run-thread "zola preview loader" 
+    (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+    (sleep 0.3)
+    (buffer-load (quri:uri "http://localhost:1111") :buffer panel))
+  "")
+
+(defun find-zola-config-directory (file-path)
+  "Find the nearest parent directory containing config.toml."
+  (let ((dir (uiop:pathname-directory-pathname file-path)))
+    (loop while dir
+          when (probe-file (merge-pathnames "config.toml" dir))
+            return dir
+          do (setf dir (uiop:pathname-parent-directory-pathname dir)))))
+
+(defun run-zola-serve (directory)
+  "Run zola serve in the specified directory."
+  (uiop:launch-program 
+   (format nil "cd ~a && zola serve -p 1111 --interface 127.0.0.1" 
+           (uiop:native-namestring directory))
+   :output :interactive
+   :error-output :interactive))
+
+(define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
+  "Open a markdown file with editor and start Zola preview if possible."
+  (let ((buffer (make-instance 'nyxt/mode/editor:editor-buffer 
+                               :url (quri:make-uri :scheme "editor" :path file)))
+        (zola-dir (find-zola-config-directory file)))
+    (set-current-buffer buffer)
+    (if zola-dir
+        (progn
+          (run-zola-serve zola-dir)
+          (zola-preview)
+          (echo "Zola preview started for directory: ~a" zola-dir))
+        (echo "No Zola config.toml found in parent directories"))))
+
+(define-command-global close-zola-preview ()
+  "Close Zola preview window and stop Zola server"
+  (delete-all-panel-buffers)
+  (uiop:launch-program "pkill zola"))
+
+(defun mem-total ()
+    (float 
+       (/ (parse-integer (string-trim "MemTotal:       kB " (uiop:read-file-line "/proc/meminfo" :at 0))) (* 1024 1024))))
+(defun mem-free ()
+  (float
+    (/ (parse-integer (string-trim "MemFree:         kB" (uiop:read-file-line "/proc/meminfo" :at 1))) (* 1024 1024))))
+(defun mem-cached ()
+  (float
+    (/ (parse-integer (string-trim "Cached:         kB" (uiop:read-file-line "/proc/meminfo" :at 4))) (* 1024 1024))))
+(defun mem-used ()
+   (- (mem-total) (+ (mem-cached) (mem-free))))
+
+(define-internal-page-command-global fetch ()
+    (buffer "*fetch*")
+  "my custom fetch"
+  (let ((dashboard-style (theme:themed-css (theme *browser*)
+                            `("#fetch"
+                              :font-size "18px"
+                              :margin "18px"
+                              :color ,*base05*))))
+   (spinneret:with-html-string
+     (:nstyle dashboard-style)
+     (:div :id "container"
+      (:h1 "System " (:span :id "subtitle" "FETCH"))
+      (:pre :id "fetch"
+        (format nil "NYXT ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
+        (:br)
+        (format nil "~a ~a" (lisp-implementation-type) (lisp-implementation-version))
+        (:br)
+        (format nil "HOST: ~a@~a" (machine-instance) (software-version))
+        (:br)
+        (format nil "WM: ~a" (uiop:getenv "XDG_CURRENT_DESKTOP"))
+        (:br)
+        (format nil "THEME: ~a (~a) w/ ~a" (uiop:getenv "GTK_THEME") "oxocarbon" (uiop:getenv "XCURSOR_THEME"))
+        (:br)
+        (format nil "SHELL: ~a" (uiop:getenv "SHELL"))
+        (:br)
+        (format nil "RAM: ~,2f/~f GB" (mem-used) (fceiling (mem-total)))
+        (:br)
+        ;; doesn't work on m1
+        ;; (format nil "CPU: ~a" (machine-version))
+        "CPU: (8) @ 2.064GHz"
+        (:br)
+        (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))))))
 
 ;;; ACE
 
@@ -738,3 +1118,26 @@
 (define-configuration (prompt-buffer)
   ((default-modes `(vi-insert-mode
          ,@%slot-value%))))
+
+;;; WEBKIT
+
+;; this was mostly guessing, thouogh this link provides basic docs for the options
+;; https://webkitgtk.org/reference/webkit2gtk/stable/class.Settings.html#properties
+(defmethod ffi-buffer-make :after ((buffer buffer))
+  (let* ((settings (webkit:webkit-web-view-get-settings
+                    (nyxt/renderer/gtk::gtk-object buffer))))
+    (setf
+     ;; enable encrypted (DRM) content if possible
+     (webkit:webkit-settings-enable-encrypted-media settings) t
+     ;; enable resizable text areas
+     (webkit:webkit-settings-enable-resizable-text-areas settings) t
+     ;; enable inspect
+     (webkit:webkit-settings-enable-developer-extras settings) t
+     ;; enable webgl support
+     (webkit:webkit-settings-enable-webgl settings) t
+     ;; use SF Pro Text as proportional font
+     (webkit:webkit-settings-default-font-family settings) "SF Pro Text"
+     (webkit:webkit-settings-default-font-size settings) 15
+     ;; use Liga SFMono Nerd Font as monospace font
+     (webkit:webkit-settings-monospace-font-family settings) "Liga SFMono Nerd Font"
+     (webkit:webkit-settings-default-monospace-font-size settings) 13)))
