@@ -9,53 +9,23 @@
   imports = [
     ./apple-silicon-support  # asahi support
     ./nyxt4-gamescope        # nyxt kiosk under gamescope
+    # ./sway                   # sway for when nyxt doesn't work
   ];
 
-  # recommended for asahi
-  boot = {
-    loader = {
-      # Use the systemd-boot EFI boot loader.
-      systemd-boot.enable = true;
-      efi.canTouchEfiVariables = false;
+  # theme our console
+  console =
+    let
+      normal = [ "161616" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "dde1e6" ];
+      bright = [ "525252" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "ffffff" ];
+    in
+    {
+      colors = normal ++ bright;
+      keyMap = "us";
     };
-    # For ` to < and ~ to > (for those with US keyboards)
-    extraModprobeConfig = ''
-      options hid_apple iso_layout=0
-    '';
-  };
 
-  # default is impure, use local firmware
-  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
-
-  # wpa_supplicant + wpa3 iffy
-  networking.wireless.iwd = {
-    enable = true;
-    settings.General.EnableNetworkConfiguration = true;
-  };
-
-  # memswap
-  zramSwap = {
-    enable = true;
-    memoryPercent = 40;
-  };
-
-  # enable flakes + nix-command
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      experimental-features = "nix-command flakes";
-      flake-registry = "";
-    };
-    channel.enable = false;
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
-
-  # allow using proprietary packages + install essentials
-  nixpkgs.config.allowUnfree = true;
+  # essentials + testing
   environment.systemPackages = with pkgs; [
-    vim  
+    vim
     git
     wget
     chromium
@@ -64,20 +34,26 @@
     vulkan-tools
   ];
 
+
+  # default user config
+  users.users = {
+    shaurizard = {
+      isNormalUser = true;
+      extraGroups = [
+        "wheel"
+        "video"
+        "audio"
+        "realtime"
+      ];
+    };
+  };
+
   # backup kde
   services = {
     desktopManager.plasma6.enable = true;
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
-    };
-  };
-
-  # default user config
-  users.users = {
-    shaurizard = {
-      isNormalUser = true;
-      extraGroups = ["wheel"];
     };
   };
 

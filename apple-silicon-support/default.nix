@@ -5,4 +5,32 @@
     ./modules/default.nix
     ./hardware-configuration.nix
   ];
+
+  # default is impure, use local firmware
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
+
+  # wpa_supplicant + wpa3 iffy
+  networking.wireless.iwd = {
+    enable = true;
+    settings.General.EnableNetworkConfiguration = true;
+  };
+
+  # memswap
+  zramSwap = {
+    enable = true;
+    memoryPercent = 40;
+  };
+
+  # recommended for asahi
+  boot = {
+    loader = {
+      # Use the systemd-boot EFI boot loader.
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = false;
+    };
+    # For ` to < and ~ to > (for those with US keyboards)
+    extraModprobeConfig = ''
+      options hid_apple iso_layout=0
+    '';
+  };
 }
