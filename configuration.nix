@@ -60,6 +60,8 @@
     wget
     chromium
     vscode-fhs
+    mesa-demos
+    vulkan-tools
   ];
 
   # backup kde
