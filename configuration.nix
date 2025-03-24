@@ -57,17 +57,16 @@
     };
   };
 
-  # log us in automatically for ease of use
+  # log us in & launches enviornment of choice automatically
   services.getty.autologinUser = "nyxtkiosk";
-
-  # backup kde
-#   services = {
-#     desktopManager.plasma6.enable = true;
-#     displayManager.sddm = {
-#       enable = true;
-#       wayland.enable = true;
-#     };
-#   };
+  systemd.user.services.nyxtkiosk1 = {
+    description = "launch kiosk";
+    serviceConfig.PassEnvironment = "DISPLAY";
+    script = ''
+      nyxt-cage
+    '';
+    wantedBy = [ "multi-user.target" ];
+  };
 
   # state
   i18n = {
