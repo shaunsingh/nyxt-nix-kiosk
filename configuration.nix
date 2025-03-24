@@ -13,7 +13,7 @@
   ];
 
   # configuration for nyxt kiosk
-  nyxt4-wrapped = {
+  config.nyxt4-wrapped = {
     display = "eDP-1";
     resolution = "2560x1600";
     scale = 2;

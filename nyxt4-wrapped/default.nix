@@ -1,22 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let 
-  # options for wrapper
-  options.nyxt4-wrapped = {
-    display = mkOption {
-      type = types.str;
-      description = "display output to use";
-    };
-    resolution = mkOption {
-      type = types.str;
-      description = "default resolution";
-    };
-    scale = mkOption {
-      type = types.int;
-      description = "integer scale for gui";
-    };
-  };
-
   # needed fonts
   otf-apple = pkgs.callPackage ./otf-apple.nix { };
   sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix { };
@@ -31,13 +15,23 @@ let
       stripRoot = false;
     };
   });
-  nyxt-gamescope = pkgs.writeShellScriptBin "nyxt-gamescope" ''
-    gamescope --fullscreen -- nyxt "$@"
-  '';
-  nyxt-cage = pkgs.writeShellScriptBin "nyxt-cage" ''
-    cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${config.nyxt4-wrapped.scale} && nyxt'
-  '';
 in {
+  # options for wrapper
+  config.nyxt4-wrapped = {
+    display = lib.mkOption {
+      type = lib.types.str;
+      description = "display output to use";
+    };
+    resolution = lib.mkOption {
+      type = lib.types.str;
+      description = "default resolution";
+    };
+    scale = lib.mkOption {
+      type = lib.types.int;
+      description = "integer scale for gui";
+    };
+  };
+
   # vulkan issues
   programs.gamescope = {
     enable = true;
@@ -51,8 +45,12 @@ in {
     wlr-randr
 
     # wrapped
-    nyxt-gamescope
-    nyxt-cage
+    pkgs.writeShellScriptBin "nyxt-gamescope" ''
+      gamescope --fullscreen -- nyxt "$@"
+    ''
+    pkgs.writeShellScriptBin "nyxt-cage" ''
+      cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${config.nyxt4-wrapped.scale} && nyxt'
+    ''
 
     # cage
     zola 
