@@ -16,8 +16,7 @@ let
     };
   });
 in {
-  # options for wrapper
-  config.nyxt4-wrapped = {
+  options.nyxt4-wrapped = {
     display = lib.mkOption {
       type = lib.types.str;
       description = "display output to use";
@@ -31,54 +30,55 @@ in {
       description = "integer scale for gui";
     };
   };
-
-  # vulkan issues
-  programs.gamescope = {
-    enable = true;
-    capSysNice = true;
-  };
-
-  environment.defaultPackages = with pkgs; [
-    # apps
-    nyxt4
-    cage
-    wlr-randr
-
-    # wrapped
-    pkgs.writeShellScriptBin "nyxt-gamescope" ''
-      gamescope --fullscreen -- nyxt "$@"
-    ''
-    pkgs.writeShellScriptBin "nyxt-cage" ''
-      cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${config.nyxt4-wrapped.scale} && nyxt'
-    ''
-
-    # cage
-    zola 
-  ] ++ (with pkgs.python3Packages; [
-    grip
-  ]);
-
-  fonts = {
-    packages = with pkgs; [
-      sf-mono-liga-bin
-      otf-apple
-      twemoji-color-font
-      sarasa-gothic
-    ];
-    fontconfig = {
-      enable = lib.mkDefault true;
-      antialias = true;
-      subpixel.lcdfilter = "default";
+  config = {
+    # vulkan issues
+    programs.gamescope = {
+      enable = true;
+      capSysNice = true;
     };
+  
+    environment.defaultPackages = with pkgs; [
+      # apps
+      nyxt4
+      cage
+      wlr-randr
+  
+      # wrapped
+      (pkgs.writeShellScriptBin "nyxt-gamescope" ''
+        gamescope -f -s ${builtins.toString config.nyxt4-wrapped.scale} -- nyxt "$@"
+      '')
+      (pkgs.writeShellScriptBin "nyxt-cage" ''
+        cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${builtins.toString config.nyxt4-wrapped.scale} && nyxt'
+      '')
+  
+      # cage
+      zola 
+    ] ++ (with pkgs.python3Packages; [
+      grip
+    ]);
+  
+    fonts = {
+      packages = with pkgs; [
+        sf-mono-liga-bin
+        otf-apple
+        twemoji-color-font
+        sarasa-gothic
+      ];
+      fontconfig = {
+        enable = lib.mkDefault true;
+        antialias = true;
+        subpixel.lcdfilter = "default";
+      };
+    };
+  
+    # Configure XDG for Nyxt
+    # xdg = {
+    #   enable = true;
+    #   configFile."nyxt" = {
+    #     source = ./config;
+    #     recursive = true;
+    #     target = ".config/nyxt";
+    #   };
+    # };
   };
-
-  # Configure XDG for Nyxt
-  # xdg = {
-  #   enable = true;
-  #   configFile."nyxt" = {
-  #     source = ./config;
-  #     recursive = true;
-  #     target = ".config/nyxt";
-  #   };
-  # };
 }
