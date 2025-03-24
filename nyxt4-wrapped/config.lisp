@@ -202,7 +202,7 @@
         :color ,*base06-*)
       `("li, ul, pre"
         :color ,*base05-*)
-      `("a code, p code, pre, code"
+      `("a code, p code, pre, dt, code"
         :font-family ,*mono*
         :background-color ,*base01-*
         :color ,*base06-*

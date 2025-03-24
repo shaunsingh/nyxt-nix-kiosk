@@ -57,6 +57,9 @@
     };
   };
 
+  # log us in automatically for ease of use
+  services.getty.autologinUser = "nyxtkiosk";
+
   # backup kde
 #   services = {
 #     desktopManager.plasma6.enable = true;
