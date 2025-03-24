@@ -7,6 +7,16 @@
     dark-mode)
  "Modes to enable in buffer by default")
 
+(define-configuration nyxt/mode/hint:hint-mode
+  ((nyxt/mode/hint:hints-alphabet "DSJKHLFAGNMXCWEIO")
+   ;; same as default except it doesn't hint images
+   (nyxt/mode/hint:hints-selector "a, button, input, textarea, details, select")))
+
+(define-configuration nyxt/mode/reduce-tracking:reduce-tracking-mode
+  ((nyxt/mode/reduce-tracking:query-tracking-parameters
+    (append '("utm_source" "utm_medium" "utm_campaign" "utm_term" "utm_content")
+            %slot-value%))))
+
 ;;; STATUS
 
 ;; ;; quick parenscript to grab out position in the buffer
@@ -344,7 +354,7 @@
          :font-family ,*mono*)
         ("tr:hover"
          :background-color ,*base0C-*
-         :color ,*base06-*
+         :color ,*base00-*
          :cursor "pointer"
          :font-weight "bold")
         (th
@@ -355,12 +365,10 @@
          :text-align "left"))
       `("#selection"
         :background-color ,*base0B-*
-        :color ,*base06-*
-        :font-weight "bold")
+        :color ,*base00-*)
       `(.marked
         :background-color ,*base0B-*
-        :color ,*base06-*
-        :font-weight "bold")
+        :color ,*base00-*)
       `(.selected
         :background-color ,*base06-*
         :color ,*base00-*)))))
@@ -850,33 +858,7 @@ A poor man's vsplit :("
 ;;; ACE
 
 (define-mode editor-mode ()
-  "General-purpose editor mode, meant to be subclassed"
-  ((keyscheme-map
-    (define-keyscheme-map "editor-mode" ()
-      nyxt/keyscheme:default
-      (list
-       "C-r" 'reload-current-buffer
-       "f11" 'toggle-fullscreen)
-      nyxt/keyscheme:cua
-      (list
-       "C-o" 'editor-open-file
-       "C-s" 'editor-write-file
-       "C-w" 'delete-current-buffer
-       "C-tab" 'switch-buffer)
-      nyxt/keyscheme:emacs
-      (list
-       "C-x C-f" 'editor-open-file
-       "C-x C-s" 'editor-write-file
-       "C-x C-k" 'delete-current-buffer
-       "C-x b" 'switch-buffer)
-      nyxt/keyscheme:vi-normal
-      (list
-       "C-o" 'editor-open-file
-       "w" 'editor-write-file
-       "R" 'reload-current-buffer
-       "g b" 'switch-buffer
-       "D" 'delete-current-buffer))))
-  (:toggler-command-p nil))
+  "General-purpose editor mode, meant to be subclassed")
 
 (defgeneric get-content (editor-submode)
   (:method ((editor editor-mode))
@@ -909,7 +891,7 @@ See `describe-class editor-mode' for details."))
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class)
-  (:documentation "Buffer to edit files. See `nyxt/mode/editor:editor-mode'."))
+  (:documentation "Buffer to edit files"))
 
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
   (set-difference (call-next-method) '(document-mode base-mode)))
@@ -926,6 +908,11 @@ See `describe-class editor-mode' for details."))
           (sleep 2)
           (set-content mode (uiop:read-file-string file)))
         (markup mode))))
+
+;; (define-internal-scheme "editor"
+;;     (lambda (url)
+;;       (markup (find-submode 'editor-mode)
+;;               (uiop:read-file-string (quri:uri-path (quri:uri url))))))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (let ((mode (find-submode 'editor-mode editor-buffer)))
@@ -992,6 +979,9 @@ BUFFER is of type `editor-buffer'."
   (set-current-buffer (make-instance 'editor-buffer
                                      :url (quri:make-uri :scheme "editor" :path file))))
 
+(define-auto-rule '(match-scheme "editor")
+  :included '(editor-mode))
+
 (define-mode ace-mode (editor-mode nyxt/mode/passthrough:passthrough-mode)
   "Mode for usage with the Ace editor."
   ((style
@@ -1019,12 +1009,6 @@ BUFFER is of type `editor-buffer'."
     (:body
      (:script
       :src "https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.1/ace.min.js"
-      :crossorigin "anonymous"
-      :type "text/javascript"
-      :charset "utf-8"
-      "")
-     (:script
-      :src "https://www.unpkg.com/ace-linters@1.5.1/build/ace-linters.js"
       :crossorigin "anonymous"
       :type "text/javascript"
       :charset "utf-8"
@@ -1061,7 +1045,15 @@ BUFFER is of type `editor-buffer'."
   (alexandria:hash-table-keys (ps-eval (ps:chain editor (get-options)))))
 
 (define-configuration ace-mode
-  ((style (str:concat
+  ((keyscheme-map
+     (define-keyscheme-map "editor-mode" ()
+        nyxt/keyscheme:cua
+        (list
+         "C-o" 'editor-open-file
+         "C-s" 'editor-write-file
+         "C-w" 'delete-current-buffer
+         "C-tab" 'switch-buffer)))
+   (style (str:concat
            %slot-value%
            (theme:themed-css (theme *browser*)
               `(".oxocarbon"
@@ -1087,6 +1079,23 @@ BUFFER is of type `editor-buffer'."
                :background-color ,*base02-*)
               `(".oxocarbon .ace_fold"
                :color ,*base04-*)
+	      ;; worker extension
+              `(".oxocarbon.ace_editor.ace_autocomplete"
+               :border "0"
+	       :background-color ,*base01-*
+               :color ,*base04-*)
+              `(".oxocarbon.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line"
+               :border "0"
+	       :background-color ,*base02-*)
+              `(".oxocarbon.ace_editor.ace_autocomplete .ace_completion-meta"
+               :border "0"
+	       :color ,*base04-*)
+              `(".oxocarbon.ace_editor.ace_autocomplete .ace_line-hover"
+               :border "0"
+	       :background-color ,*base0C-*
+	       :color ,*base05-*)
+              `(".oxocarbon.ace_editor.ace_autocomplete .ace_completion-highlight"
+	       :color ,*base06-*)
               ;; token styles
               `(".oxocarbon .ace_comment"
                :color ,*base03-*)
@@ -1164,13 +1173,12 @@ BUFFER is of type `editor-buffer'."
          "worker-base.min.js"
          ;; extensions
          "ext-language_tools.min.js"   ;; basic autocompletion/snippets
+         "ext-split.min.js"            ;; enable split functionality
          "ext-searchbox.min.js"        ;; used for cmd/ctrl-f dialogue
          "ext-whitespace.min.js"       ;; detect spacing/indent
-         ;;"ext-split.min.js"            ;; enable split functionality
          "ext-settings_menu.min.js"    ;; view and adjust settings
          "ext-keybinding_menu.min.js"  ;; view and adjust keybindings
-         "ext-modelist.min.js"         ;; detect mode based on filepath
-         "ext-beautify.min.js")))      ;; formatting support
+         "ext-modelist.min.js")))      ;; detect mode based on filepath
     (epilogue
       (str:concat
        (ps:ps
@@ -1190,43 +1198,46 @@ BUFFER is of type `editor-buffer'."
            (req "ace/ext/language_tools")
            (req "ace/ext/searchbox")
            (req "ace/ext/whitespace")
-           (req "ace/ext/split")
+	   (req "ace/ext/split")
            (ps:chain (req "ace/ext/settings_menu") (init editor))
            (ps:chain (req "ace/ext/keybinding_menu") (init editor))
            (ps:chain editor session
                      (set-mode (ps:chain (req "ace/ext/modelist")
                                          (get-mode-for-path (ps:@ window location href)) mode)))
-           (ps:chain editor commands
-                     (add-command (ps:chain ace (require "ace/ext/beautify") commands 0)))
-           ;; editor configpassthrough-mode
-           (ps:chain editor (set-option "cursorstyle" "wide"))          ;; static cursor
-           (ps:chain editor (set-option "readonly" nil))                ;; set read and write file
-           (ps:chain editor (set-option "fontsize" 15))                 ;; bigger default font
-           (ps:chain editor (set-option "showlinenumbers" nil))         ;; disable line numbers
-           (ps:chain editor (set-option "showprintmargin" t))           ;; enable print margin (colorline)
-           (ps:chain editor (set-option "displayindentguides" nil))     ;; disable indent markers
-           (ps:chain editor (set-option "hscrollbaralwaysvisible" nil)) ;; don't always show scrollbar (h)
-           (ps:chain editor (set-option "vscrollbaralwaysvisible" nil)) ;; don't always show scrollbar (v)
-           (ps:chain editor (set-option "usesofttabs" t))               ;; use spaces instead of tabs
-           (ps:chain editor (set-option "enablesnippets" t))            ;; enable snippet support
-           (ps:chain editor (set-option "highlightactiveline" t))       ;; highlight current line
-           (ps:chain editor (set-option "enablebasicautocompletion" t)) ;; enable (basic) autocompleetion
+           ;; editor config 
+           (ps:chain editor (set-option "cursorStyle" "wide"))          ;; static cursor
+           (ps:chain editor (set-option "readOnly" nil))                ;; set read and write file
+           (ps:chain editor (set-option "fontSize" 15))                 ;; bigger default font
+           (ps:chain editor (set-option "showLineNumbers" nil))         ;; disable line numbers
+           (ps:chain editor (set-option "showPrintMargin" t))           ;; enable print margin (colorline)
+           (ps:chain editor (set-option "displayIndentGuides" nil))     ;; disable indent markers
+           (ps:chain editor (set-option "hScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (h)
+           (ps:chain editor (set-option "vScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (v)
+           (ps:chain editor (set-option "useSoftTabs" t))               ;; use spaces instead of tabs
+           (ps:chain editor (set-option "enableSnippets" t))            ;; enable snippet support
+           (ps:chain editor (set-option "enableBasicAutocompletion" t)) ;; enable autocomplete support (basic)
+           (ps:chain editor (set-option "enableLiveAutocompletion" t)) ;; enable autocomplete support (live)
+           (ps:chain editor (set-option "highlightActiveLine" t))       ;; highlight current line
            ;; vim bindings
            (vi-noremap "j" "gj" "normal")
            (vi-noremap "k" "gk" "normal")
-           ;; vim ex commands
-           (vi-define-ex "write" "w" (lambda (cm input)
-                                        (ps:chain cm ace (exec-command "save"))))
+           ;; vim ex commands (ace)
+           ;; (vi-define-ex "write" "w" (lambda (cm input)
+           ;;                              (ps:chain cm ace (exec-command "save"))))
            (vi-define-ex "help" "h" (lambda ()
                                         (ps:chain editor (show-keyboard-shortcuts))))
            (vi-define-ex "settings" "se" (lambda ()
                                             (ps:chain editor (show-settings-menu))))
+           ;; vim ex commands (nyxt
+           ;; (vi-define-ex "write" "w" (editor-write-file))
+           ;; (vi-define-ex "quit" "q" (delete-current-buffer))
+           ;; (vi-define-ex "wq" "wq" (lambda ()
+           ;;                           (editor-write-file)
+           ;;                           (delete-current-buffer)))
+           ;; (vi-define-ex "edit" "e" (editor-open-file))
+           ;; (vi-define-ex "buffer" "b" (switch-buffer))
            ;; load workers
-           (req "ace/worker/base")
-           ;; register ace linters
-           (ps:chain -language-provider (from-cdn "https://www.unpkg.com/ace-linters@1.5.1/build/")
-                     (register-editor editor))))))))
-
+           (req "ace/worker/base")))))))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
   "Add `editor-mode' and `ace-mode' to `editor-buffer' by default."
