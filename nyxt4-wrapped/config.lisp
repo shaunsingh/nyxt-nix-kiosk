@@ -1,12 +1,5 @@
 (in-package #:nyxt-user)
 
-;; load quicklisp if it's available
-#-quicklisp
-(let ((quicklisp-init
-       (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
-
 ;;; MODES
 
 (defvar *buffer-modes*
@@ -112,28 +105,22 @@
       (:div :id "container"
             ;; for looks, I should probably make this functional
             (:div :id "vi-mode" "U:**-")
-            ;; buffer count
             (:div :id "buffers"
                   (format nil "[~a/~a]"
                       buffer-count
                       (length (buffer-list))))
-;;            ;; scroll length
 ;;             (:div :id "percentage"
 ;;                   (format nil "L~a"
 ;;                       (%percentage)))
-             ;; load status
              ;;(:div :id "load"
              ;;      (:raw
              ;;       (my-format-status-load-status status)))
-             ;; url
              (:div :id "url"
                    (:raw
                     (my-format-status-url status)))
-             ;; emacs-esque minions
              (:div :id "minions"
                    (:raw 
                     (my-format-minions status)))
-             ;; show open tabs
              (:div :id "tabs"
                    (:raw
                     (format-status-tabs status)))
@@ -177,8 +164,8 @@
       `(body
         :background-color ,*base00-*
         :color ,*base04-*
-        :font-family ,*font*
-        :margin "4% 6%")
+        :font-family ,*font*)
+        ;;:margin "4% 6%")
       `("h1, #subtitle"
         :font-size "63px"
         :margin-bottom "-9px")
@@ -217,32 +204,25 @@
   ((height 36)
    (style
     (theme:themed-css (theme *browser*)
-      ;; by default nyxt sets a proportional font
       `(*
         :font-family ,*mono*
         :font-size "11px")
-      ;; add some padding around the body
       `(body
         :margin "9px"
 	:margin-top "11px"
         :background-color ,*base02-* 
         :color ,*base05-*)
-      ;; let the statusline overflow
       `("#container"
         :display "flex"
         :white-space "nowrap"
         :overflow "hidden")
-      ;; add a generous amount of padding around everything
       `("#vi-mode, #buffers, #load, #percentage, #url, #minions, #tabs, #modes"
         :padding-left "9px")
-      ;; url can be nice and bright
       `("#url"
         :color ,*base06-* 
         :font-weight "bold")
-      ;; modes can be dull and dark
       `("#modes"
         :color "#a2a9b0")
-      ;; button tweaks incl vim color
       `(button
         :all "unset"
         :color ,*base04-*)
@@ -399,286 +379,297 @@
       :padding-left "9px"
       :margin "3px")))))
 
-;; ;;; STARTPAGE
-;; 
-;; (defparameter list-of-fruits
-;;   (list "abiu"
-;;         "açaí"
-;;         "acerola"
-;;         "ackee"
-;;         "african cucumber"
-;;         "apple"
-;;         "apricot"
-;;         "avocado"
-;;         "banana"
-;;         "bilberry"
-;;         "blackberry"
-;;         "blackcurrant"
-;;         "black sapote"
-;;         "blueberry"
-;;         "boysenberry"
-;;         "breadfruit"
-;;         "buddha's hand (fingered citron)"
-;;         "cactus pear"
-;;         "canistel"
-;;         "cempedak"
-;;         "cherimoya (Custard Apple)"
-;;         "cherry"
-;;         "chico fruit"
-;;         "cloudberry"
-;;         "coco De Mer"
-;;         "coconut"
-;;         "crab apple"
-;;         "cranberry"
-;;         "currant"
-;;         "damson"
-;;         "date"
-;;         "dragonfruit (or Pitaya)"
-;;         "durian"
-;;         "egg Fruit"
-;;         "elderberry"
-;;         "feijoa"
-;;         "fig"
-;;         "finger Lime (or Caviar Lime)"
-;;         "goji berry"
-;;         "gooseberry"
-;;         "grape"
-;;         "raisin"
-;;         "grapefruit"
-;;         "grewia asiatica (phalsa or falsa)"
-;;         "guava"
-;;         "hala Fruit"
-;;         "honeyberry"
-;;         "huckleberry"
-;;         "jabuticaba"
-;;         "jackfruit"
-;;         "jambul"
-;;         "japanese plum"
-;;         "jostaberry"
-;;         "jujube"
-;;         "juniper berry"
-;;         "kaffir Lime"
-;;         "kiwano (horned melon)"
-;;         "kiwifruit"
-;;         "kumquat"
-;;         "lemon"
-;;         "lime"
-;;         "loganberry"
-;;         "longan"
-;;         "loquat"
-;;         "lulo"
-;;         "lychee"
-;;         "magellan Barberry"
-;;         "mamey Apple"
-;;         "mamey Sapote"
-;;         "mango"
-;;         "mangosteen"
-;;         "marionberry"
-;;         "melon"
-;;         "cantaloupe"
-;;         "galia melon"
-;;         "honeydew"
-;;         "mouse melon"
-;;         "musk melon"
-;;         "watermelon"
-;;         "miracle fruit"
-;;         "monstera deliciosa"
-;;         "mulberry"
-;;         "nance"
-;;         "nectarine"
-;;         "orange"
-;;         "blood orange"
-;;         "clementine"
-;;         "mandarine"
-;;         "tangerine"
-;;         "papaya"
-;;         "passionfruit"
-;;         "pawpaw"
-;;         "peach"
-;;         "pear"
-;;         "persimmon"
-;;         "plantain"
-;;         "plum"
-;;         "prune (dried plum)"
-;;         "pineapple"
-;;         "pineberry"
-;;         "plumcot (or Pluot)"
-;;         "pomegranate"
-;;         "pomelo"
-;;         "purple mangosteen"
-;;         "quince"
-;;         "raspberry"
-;;         "salmonberry"
-;;         "rambutan (or Mamin Chino)"
-;;         "redcurrant"
-;;         "rose apple"
-;;         "salal berry"
-;;         "salak"
-;;         "satsuma"
-;;         "shine Muscat or Vitis Vinifera"
-;;         "sloe or Hawthorn Berry"
-;;         "soursop"
-;;         "star apple"
-;;         "star fruit"
-;;         "strawberry"
-;;         "surinam cherry"
-;;         "tamarillo"
-;;         "tamarind"
-;;         "tangelo"
-;;         "tayberry"
-;;         "ugli fruit"
-;;         "white currant"
-;;         "white sapote"
-;;         "yuzu"
-;;         "bell pepper"
-;;         "chile pepper"
-;;         "corn kernel"
-;;         "cucumber"
-;;         "eggplant"
-;;         "jalapeño"
-;;         "olive"
-;;         "pea"
-;;         "pumpkin"
-;;         "squash"
-;;         "tomato"
-;;         "zucchini"))
-;; 
-;; ;; nice words
-;; (defparameter list-of-pretty-words
-;;   (list "lovely"
-;;         "wonderful"
-;;         "delightful"
-;;         "beautiful"
-;;         "pleasant"
-;;         "adorable"
-;;         "sweet"
-;;         "delicious"
-;;         "charming"
-;;         "fantastic"
-;;         "gorgeous"
-;;         "heavenly"
-;;         "magnificent"
-;;         "radiant"
-;;         "splendid"
-;;         "exquisite"
-;;         "enchanting"
-;;         "serene"
-;;         "blissful"
-;;         "harmonious"
-;;         "majestic"
-;;         "tranquil"
-;;         "whimsical"
-;;         "ethereal"
-;;         "celestial"
-;;         "idyllic"
-;;         "mesmerizing"
-;;         "spellbinding"
-;;         "captivating"
-;;         "fascinating"
-;;         "riveting"
-;;         "enthralling"
-;;         "mesmerizing"
-;;         "inspiring"))
-;; 
-;; ;; have some alliteration word fun
-;; (defun fruit-of-the-day-message ()
-;;   (flet ((capitalize-word (word)
-;;            (concatenate 'string (string-upcase (subseq word 0 1))
-;;                               (subseq word 1))))
-;;     (let* ((current-time (local-time:now))
-;;            (current-day (aref local-time:+day-names+
-;;                               (local-time:timestamp-day-of-week current-time)))
-;;            (current-fruit (nth (mod (local-time:day-of current-time)
-;;                                     (length list-of-fruits))
-;;                                list-of-fruits))
-;;            (matching-words (remove-if-not (lambda (word)
-;;                                             (char= (char word 0)
-;;                                                    (char current-fruit 0)))
-;;                                           list-of-pretty-words))
-;;            (word (if matching-words
-;;                      (nth (random (length matching-words)) matching-words)
-;;                      (nth (random (length list-of-pretty-words))
-;;                           list-of-pretty-words))))
-;;       (format nil "Have ~A ~A ~A ~A!"
-;;               (if (member (char (string word) 0) '(#\a #\e #\i #\o #\u))
-;;                   "an" "a")
-;;               (capitalize-word word)
-;;               (capitalize-word current-fruit)
-;;               current-day))))
-;; 
-;; ;; stolen from time.lisp
-;; (defun sort-by-time (sequence &key (key #'last-access))
-;;   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-;;   (sort sequence #'local-time:timestamp> :key key))
-;; 
-;; ;; now to bring it all together
-;; (define-internal-page-command-global startpage ()
-;;     (buffer "*startpage*")
-;;   "my custom startpage"
-;;   (flet ((list-bookmarks (&key (limit 6) (separator " → "))
+;;; STARTPAGE
+
+(defparameter list-of-fruits
+  (list "abiu"
+        "açaí"
+        "acerola"
+        "ackee"
+        "african cucumber"
+        "apple"
+        "apricot"
+        "avocado"
+        "banana"
+        "bilberry"
+        "blackberry"
+        "blackcurrant"
+        "black sapote"
+        "blueberry"
+        "boysenberry"
+        "breadfruit"
+        "buddha's hand (fingered citron)"
+        "cactus pear"
+        "canistel"
+        "cempedak"
+        "cherimoya (Custard Apple)"
+        "cherry"
+        "chico fruit"
+        "cloudberry"
+        "coco De Mer"
+        "coconut"
+        "crab apple"
+        "cranberry"
+        "currant"
+        "damson"
+        "date"
+        "dragonfruit (or Pitaya)"
+        "durian"
+        "egg Fruit"
+        "elderberry"
+        "feijoa"
+        "fig"
+        "finger Lime (or Caviar Lime)"
+        "goji berry"
+        "gooseberry"
+        "grape"
+        "raisin"
+        "grapefruit"
+        "grewia asiatica (phalsa or falsa)"
+        "guava"
+        "hala Fruit"
+        "honeyberry"
+        "huckleberry"
+        "jabuticaba"
+        "jackfruit"
+        "jambul"
+        "japanese plum"
+        "jostaberry"
+        "jujube"
+        "juniper berry"
+        "kaffir Lime"
+        "kiwano (horned melon)"
+        "kiwifruit"
+        "kumquat"
+        "lemon"
+        "lime"
+        "loganberry"
+        "longan"
+        "loquat"
+        "lulo"
+        "lychee"
+        "magellan Barberry"
+        "mamey Apple"
+        "mamey Sapote"
+        "mango"
+        "mangosteen"
+        "marionberry"
+        "melon"
+        "cantaloupe"
+        "galia melon"
+        "honeydew"
+        "mouse melon"
+        "musk melon"
+        "watermelon"
+        "miracle fruit"
+        "monstera deliciosa"
+        "mulberry"
+        "nance"
+        "nectarine"
+        "orange"
+        "blood orange"
+        "clementine"
+        "mandarine"
+        "tangerine"
+        "papaya"
+        "passionfruit"
+        "pawpaw"
+        "peach"
+        "pear"
+        "persimmon"
+        "plantain"
+        "plum"
+        "prune (dried plum)"
+        "pineapple"
+        "pineberry"
+        "plumcot (or Pluot)"
+        "pomegranate"
+        "pomelo"
+        "purple mangosteen"
+        "quince"
+        "raspberry"
+        "salmonberry"
+        "rambutan (or Mamin Chino)"
+        "redcurrant"
+        "rose apple"
+        "salal berry"
+        "salak"
+        "satsuma"
+        "shine Muscat or Vitis Vinifera"
+        "sloe or Hawthorn Berry"
+        "soursop"
+        "star apple"
+        "star fruit"
+        "strawberry"
+        "surinam cherry"
+        "tamarillo"
+        "tamarind"
+        "tangelo"
+        "tayberry"
+        "ugli fruit"
+        "white currant"
+        "white sapote"
+        "yuzu"
+        "bell pepper"
+        "chile pepper"
+        "corn kernel"
+        "cucumber"
+        "eggplant"
+        "jalapeño"
+        "olive"
+        "pea"
+        "pumpkin"
+        "squash"
+        "tomato"
+        "zucchini"))
+
+;; nice words
+(defparameter list-of-pretty-words
+  (list "lovely"
+        "wonderful"
+        "delightful"
+        "beautiful"
+        "pleasant"
+        "adorable"
+        "sweet"
+        "delicious"
+        "charming"
+        "fantastic"
+        "gorgeous"
+        "heavenly"
+        "magnificent"
+        "radiant"
+        "splendid"
+        "exquisite"
+        "enchanting"
+        "serene"
+        "blissful"
+        "harmonious"
+        "majestic"
+        "tranquil"
+        "whimsical"
+        "ethereal"
+        "celestial"
+        "idyllic"
+        "mesmerizing"
+        "spellbinding"
+        "captivating"
+        "fascinating"
+        "riveting"
+        "enthralling"
+        "mesmerizing"
+        "inspiring"))
+
+(defun fruit-of-the-day-message ()
+  (flet ((capitalize-word (word)
+           (concatenate 'string (string-upcase (subseq word 0 1))
+                              (subseq word 1))))
+    (let* ((current-time (local-time:now))
+           (current-day (aref local-time:+day-names+
+                              (local-time:timestamp-day-of-week current-time)))
+           (current-fruit (nth (mod (local-time:day-of current-time)
+                                    (length list-of-fruits))
+                               list-of-fruits))
+           (matching-words (remove-if-not (lambda (word)
+                                            (char= (char word 0)
+                                                   (char current-fruit 0)))
+                                          list-of-pretty-words))
+           (word (if matching-words
+                     (nth (random (length matching-words)) matching-words)
+                     (nth (random (length list-of-pretty-words))
+                          list-of-pretty-words))))
+      (format nil "Have ~A ~A ~A ~A!"
+              (if (member (char (string word) 0) '(#\a #\e #\i #\o #\u))
+                  "an" "a")
+              (capitalize-word word)
+              (capitalize-word current-fruit)
+              current-day))))
+
+;; modified from time.lisp
+(defun sort-by-time (sequence &key (key #'last-access))
+  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
+  (sort sequence #'local-time:timestamp> :key key))
+
+(define-internal-page-command-global startpage ()
+    (buffer "*startpage*")
+  "my custom startpage"
+  (flet ((list-bookmarks (&key (limit 6) (separator " → "))
+           (spinneret:with-html-string
+             (let ((mode (make-instance 'nyxt/mode/bookmark:bookmark-mode)))
+               (alexandria:if-let ((bookmark-content (ignore-errors (files:content (nyxt/mode/bookmark:bookmarks-file mode)))))
+                 (dolist (bookmark (serapeum:take limit (the list (sort-by-time bookmark-content :key #'nyxt/mode/bookmark:date))))
+                   (:li (title bookmark) separator
+                        (:a :href (render-url (url bookmark))
+                            (render-url (url bookmark)))))
+                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/mode/bookmark:bookmarks-file mode)))))))))
+	 ;; reimplemented from nyxt 2.x
+;;          (history-html-list (&key (limit 6) (separator " → "))
 ;;            (spinneret:with-html-string
-;;              (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-;;                (alexandria:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-;;                  (dolist (bookmark (serapeum:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
-;;                    (:li (title bookmark) separator
-;;                         (:a :href (render-url (url bookmark))
-;;                             (render-url (url bookmark)))))
-;;                  (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
-;;     (let ((current-year (local-time:timestamp-year (local-time:now)))
-;;           (dashboard-style (theme:themed-css (theme *browser*)
-;;                               `("#motto"
-;;                                 :font-size "27px"
-;;                                 :margin"18px"
-;;                                 :margin-left "3px"
-;;                                 :color ,*base08*)
-;;                               `("#copyright"
-;;                                 :position "absolute"
-;;                                 :text-align "right"
-;;                                 :bottom "1.5em"
-;;                                 :right "1.5em"))))
-;;      (spinneret:with-html-string
-;;        (:nstyle dashboard-style)
-;;        (:div :id "container"
-;;         (:h1 "Welcome to " (:span :id "subtitle" "NYXT ☺"))
-;;         (:div :id "buttons"
-;;          (:nbutton :text "Restore Session"
-;;            (nyxt::restore-history-by-name))
-;;          (:nbutton :text "Open Repl"
-;;            (nyxt/repl-mode:repl))
-;;          (:nbutton :text "View Changelog"
-;;            (nyxt:changelog))
-;;          (:nbutton :text "View Bookmarks"
-;;            (nyxt/bookmark-mode:list-bookmarks))
-;;          (:nbutton :text "View Annotations"
-;;            (nyxt/annotate-mode:show-annotations)))
-;;         (:div :id "motto"
-;;          "私たちのミッションは"
-;;          (:br)
-;;          "先端工学を用いて上質で"
-;;          (:br)
-;;          "機能的なデザインの"
-;;          (:br)
-;;          "製品を作り出すことです。")
-;;         (:h2 "Recents")
-;;         (:h3 "Bookmarks")
-;;         (:ul (:raw (list-bookmarks :limit 9)))
-;;         (:h3 "History")
-;;         (:ul (:raw (nyxt::history-html-list :limit 9)))
-;;         (:h2 (fruit-of-the-day-message))
-;;         (:div :id "copyright"
-;;           (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
-;;           (:br)
-;;           (format nil "lisp ~a ~a" (lisp-implementation-type) (lisp-implementation-version))
-;;           (:br)
-;;           (format nil "host ~a@~a" (software-type) (software-version))
-;;           (:br)
-;;           (format nil "Atlas Engineer LLC, 2018-~a" current-year)
-;;           (:br)
-;;           (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+)))))))
-;; 
-;; ;; set default url to startpage
-;; (define-configuration browser
-;;   ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
+;;              (let ((history-entries (subseq (history-vector *browser*) 
+;;                                            0 
+;;                                            (min limit (length (history-vector *browser*))))))
+;;                (if (plusp (length history-entries))
+;;                    (dolist (entry history-entries)
+;;                      (:li (title entry) separator
+;;                           (:a :href (render-url (url entry))
+;;                               (render-url (url entry)))))
+;;                    (:p "No history entries."))))))
+    (let ((current-year (local-time:timestamp-year (local-time:now)))
+          (dashboard-style (theme:themed-css (theme *browser*)
+                              `("#motto"
+                                :font-size "27px"
+                                :margin "18px"
+                                :margin-left "3px"
+                                :color ,*base08-*)
+                              `("#buttons"
+	                        :margin-top "9px"
+                                :font-size "18px")
+                              `("#copyright"
+                                :position "absolute"
+                                :text-align "right"
+                                :bottom "1.5em"
+                                :right "1.5em"))))
+     (spinneret:with-html-string
+       (:nstyle dashboard-style)
+       (:div :id "container"
+        (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
+         (:div :id "buttons"
+          (:nbutton :text "Manual"
+	   '(make-buffer-focus :url (nyxt-url 'manual)))
+          (:nbutton :text "Changelog"
+	   '(make-buffer-focus :url (nyxt-url 'changelog)))
+          (:nbutton :text "Bookmarks"
+           '(nyxt/mode/bookmark:list-bookmarks))
+          (:nbutton :text "Annotations"
+           '(nyxt/mode/annotate:show-annotations)))
+        (:div :id "motto"
+         "私たちのミッションは"
+         (:br)
+         "先端工学を用いて上質で"
+         (:br)
+         "機能的なデザインの"
+         (:br)
+         "製品を作り出すことです。")
+        (:h2 "Recents")
+        (:h3 "Bookmarks")
+        (:ul (:raw (list-bookmarks :limit 9)))
+        ;;(:h3 "History")
+        ;;(:ul (:raw (history-html-list :limit 9)))
+        (:h2 (fruit-of-the-day-message))
+        (:div :id "copyright"
+          (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
+          (:br)
+          (format nil "lisp ~a ~a" (lisp-implementation-type) (lisp-implementation-version))
+          (:br)
+          (format nil "host ~a@~a" (software-type) (software-version))
+          (:br)
+          (format nil "Atlas Engineer LLC, 2018-~a" current-year)
+          (:br)
+          (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+)))))))
+
+;; set default url to startpage
+(define-configuration browser
+  ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
 
 ;;; COMMANDS
 
@@ -739,7 +730,7 @@ A poor man's vsplit :("
   "Open a markdown file with a grip-powered preview."
   (flet ((launch-grip (file-path)
            (uiop:launch-program (format nil "grip ~a" file-path))))
-    (let ((buffer (make-instance 'nyxt/mode/editor:editor-buffer
+    (let ((buffer (make-instance 'editor-buffer
                                  :url (quri:make-uri :scheme "editor" :path file))))
       (set-current-buffer buffer)
       (launch-grip file)
@@ -777,7 +768,7 @@ A poor man's vsplit :("
 
 (define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
   "Open a markdown file with editor and start Zola preview if possible."
-  (let ((buffer (make-instance 'nyxt/mode/editor:editor-buffer 
+  (let ((buffer (make-instance 'editor-buffer 
                                :url (quri:make-uri :scheme "editor" :path file)))
         (zola-dir (find-zola-config-directory file)))
     (set-current-buffer buffer)
@@ -858,7 +849,150 @@ A poor man's vsplit :("
 
 ;;; ACE
 
-(define-mode ace-mode (nyxt/mode/editor:editor-mode nyxt/mode/passthrough:passthrough-mode)
+(define-mode editor-mode ()
+  "General-purpose editor mode, meant to be subclassed"
+  ((keyscheme-map
+    (define-keyscheme-map "editor-mode" ()
+      nyxt/keyscheme:default
+      (list
+       "C-r" 'reload-current-buffer
+       "f11" 'toggle-fullscreen)
+      nyxt/keyscheme:cua
+      (list
+       "C-o" 'editor-open-file
+       "C-s" 'editor-write-file
+       "C-w" 'delete-current-buffer
+       "C-tab" 'switch-buffer)
+      nyxt/keyscheme:emacs
+      (list
+       "C-x C-f" 'editor-open-file
+       "C-x C-s" 'editor-write-file
+       "C-x C-k" 'delete-current-buffer
+       "C-x b" 'switch-buffer)
+      nyxt/keyscheme:vi-normal
+      (list
+       "C-o" 'editor-open-file
+       "w" 'editor-write-file
+       "R" 'reload-current-buffer
+       "g b" 'switch-buffer
+       "D" 'delete-current-buffer))))
+  (:toggler-command-p nil))
+
+(defgeneric get-content (editor-submode)
+  (:method ((editor editor-mode))
+    (declare (ignore editor))
+    (echo-warning "Editor buffer cannot edit files without configured editor mode."))
+  (:documentation "Get the content of the EDITOR-SUBMODE as a string."))
+
+(defgeneric set-content (editor-submode content)
+  (:method ((editor editor-mode) (content t))
+    (declare (ignore editor))
+    (echo-warning "Editor buffer cannot edit files without configured editor mode.
+See `describe-class editor-mode' for details."))
+  (:documentation "Set the content of EDITOR-SUBMODE to the string CONTENT."))
+
+(defgeneric markup (editor-submode)
+  (:method ((editor editor-mode))
+    (spinneret:with-html-string
+      (:head
+       (:nstyle (style (buffer editor))))
+      (:body
+       (:p "Please configure an editor mode to use an editor buffer. See "
+           (:code "describe-class") " for " (:code "editor-buffer")
+           " to see the list of functions to implement."))))
+  (:documentation "Return an HTML string representation of the file to be edited."))
+
+(define-class editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
+                             context-buffer modable-buffer document-buffer input-buffer)
+  ((nyxt:title "*Editor*"))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class)
+  (:documentation "Buffer to edit files. See `nyxt/mode/editor:editor-mode'."))
+
+(defmethod nyxt:default-modes :around ((buffer editor-buffer))
+  (set-difference (call-next-method) '(document-mode base-mode)))
+
+(defmethod file ((buffer editor-buffer))
+  (uiop:parse-native-namestring (quri:uri-path (url buffer))))
+
+(define-internal-scheme "editor"
+    (lambda (url buffer)
+      (let ((mode (find-submode 'editor-mode buffer))
+            (file (quri:uri-path (quri:uri url))))
+        (uiop:chdir (uiop:pathname-directory-pathname file))
+        (run-thread "editor content setting"
+          (sleep 2)
+          (set-content mode (uiop:read-file-string file)))
+        (markup mode))))
+
+(defmethod editor ((editor-buffer editor-buffer))
+  (let ((mode (find-submode 'editor-mode editor-buffer)))
+    (unless (eq 'editor-mode (serapeum:class-name-of mode))
+      mode)))
+
+(defmethod write-file-with-editor ((buffer editor-buffer) &key (if-exists :error))
+  (cond
+    ((editor buffer)
+     (handler-case
+         (alexandria:write-string-into-file (get-content (editor buffer))
+                                            (file buffer)
+                                            :if-exists if-exists)
+       (file-error (e)
+         (echo-warning "Cannot write ~a: ~a" (file buffer) e)
+         nil)))
+    (t
+     (echo-warning "Editor buffer cannot write file without configured editor mode.")
+     nil)))
+
+(defun prompt-for-editor-file ()
+  (uiop:native-namestring
+   (pathname
+    (prompt1
+     :prompt "Open file"
+     :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+     :input (uiop:native-namestring (uiop:getcwd))
+     :sources
+     (list (make-instance 'nyxt/mode/file-manager:file-source
+                          :name "Existing file"
+                          :actions-on-return #'identity)
+           (make-instance 'prompter:raw-source
+                          :name "Create new file"))))))
+
+(define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
+  "Open a file.
+
+BUFFER is of type `editor-buffer'."
+  (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
+
+(define-command editor-write-file (&key (buffer (current-buffer)))
+  "Write a file to storage.
+
+BUFFER is of type `editor-buffer'."
+  (if (uiop:file-exists-p (file buffer))
+      (if-confirm ((format nil "Overwrite ~s?" (file buffer))
+                   :yes "overwrite" :no "cancel")
+          (echo "File ~s ~:[not ~;~]saved."
+                (file buffer) (write-file-with-editor buffer :if-exists :overwrite)))
+      (echo "File ~s ~:[not ~;~]saved." (file buffer) (write-file-with-editor buffer))))
+
+(define-command-global edit-file (&optional (file (prompt-for-editor-file)))
+  "Open a new editor and query a FILE to edit in it."
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))
+
+(defun prompt-for-editor-user-file ()
+  (uiop:native-namestring
+   (files:expand
+    (prompt1 :prompt "Edit user file"
+             :sources 'nyxt::user-file-source))))
+
+(define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
+  (set-current-buffer (make-instance 'editor-buffer
+                                     :url (quri:make-uri :scheme "editor" :path file))))
+
+(define-mode ace-mode (editor-mode nyxt/mode/passthrough:passthrough-mode)
   "Mode for usage with the Ace editor."
   ((style
     (theme:themed-css (theme *browser*)
@@ -884,13 +1018,13 @@ A poor man's vsplit :("
      (:style (style ace)))
     (:body
      (:script
-      :src "https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.3/ace.min.js"
+      :src "https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.1/ace.min.js"
       :crossorigin "anonymous"
       :type "text/javascript"
       :charset "utf-8"
       "")
      (:script
-      :src "https://www.unpkg.com/ace-linters@0.6.0/build/ace-linters.js"
+      :src "https://www.unpkg.com/ace-linters@1.5.1/build/ace-linters.js"
       :crossorigin "anonymous"
       :type "text/javascript"
       :charset "utf-8"
@@ -1002,7 +1136,7 @@ A poor man's vsplit :("
      (mapcar
        (lambda (name)
          (quri:merge-uris (quri:uri name)
-        (quri:uri "https://cdnjs.cloudflare.com/ajax/libs/ace/1.15.3/")))
+        (quri:uri "https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.1/")))
        '(;; vim keybinding support
          "keybinding-vim.min.js"
          ;; language modes
@@ -1090,12 +1224,13 @@ A poor man's vsplit :("
            ;; load workers
            (req "ace/worker/base")
            ;; register ace linters
-           (ps:chain -language-provider (from-cdn "https://www.unpkg.com/ace-linters@0.6.0/build/")
+           (ps:chain -language-provider (from-cdn "https://www.unpkg.com/ace-linters@1.5.1/build/")
                      (register-editor editor))))))))
 
-;; use ace for editor-mode by default
-(define-configuration nyxt/mode/editor:editor-buffer
-  ((default-modes `(ace-mode ,@%slot-value%))))
+
+(defmethod nyxt:default-modes append ((buffer editor-buffer))
+  "Add `editor-mode' and `ace-mode' to `editor-buffer' by default."
+  (list 'editor-mode 'ace-mode))
 
 ;;; LOAD
 
