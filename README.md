@@ -22,7 +22,13 @@ Finally, use `passwd` to set a password for the `nyxtkiosk` user, reboot if need
 
 ## Configuration
 
-By default, a copy of my `sway` configuration is imported, as NYXT does not completely fulfill my needs quite yet. Uncomment `./sway` from the imports in `configuration.nix` if you'd like to use just the kiosk mode.
+By default, a copy of my `sway` configuration is imported, as NYXT does not completely fulfill my needs quite yet. It also ships with `greetd` as the standard display maanger, which will automatically log-in and launch NYXT under cage on first boot, then when exit will launch sway. Uncomment `./sway` from the imports in `configuration.nix` and remove it from the `greetd` configuration if you'd like to use just the kiosk mode.
+
+You may also adjust the configuration to do one of the following:
+
+- (recommended) run `nyxt-cage` to launch NYXT under the cage compositor
+- Run `nyxt-gamescope` to launch NYXT under Valve's gamescope microcompositor
+- Use the TTY as you wish
 
 Adjust the options for `nyxt4-wrapped` in `configuration.nix` to suit your needs. The defaults are as follows. 
 
@@ -38,12 +44,3 @@ nyxt4-wrapped = {
 You may check the former two for your own machine by running `wlr-randr` under `sway` or any wayland compositor. Scale is subjective, adjust as you see fit, generally for a hidpi machine you want 2, stick with 1 for any lower resolution displays.
 
 Otherwise, just modify NYXT's config at `~/.config/nyxt/lisp` as you'd like. A copy of my personal NYXT config is provided with no warranty at `nyxt4-unwrapped/config.lisp` 
-
-## Usage
-
-By default `nyxt-nix-kiosk` does not ship with a display manager, so you will be met with the TUI. Login with the credentials established in the previous step. You may now do one of the following:
-
-- (recommended) run `nyxt-cage` to launch NYXT under the cage compositor
-- Run `nyxt-gamescope` to launch NYXT under Valve's gamescope microcompositor
-- If you left `./sway` imported, run `sway` to launch my sway configuration, open the launcher with `meta+space`, launch `nyxt`, and optionally use `cmd+f` to fullscreen. The full keybinds can be found in `/sway/home.nix`
-- Use the TTY as you wish

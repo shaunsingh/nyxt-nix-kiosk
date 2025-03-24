@@ -58,14 +58,20 @@
   };
 
   # log us in & launches enviornment of choice automatically
-  services.getty.autologinUser = "nyxtkiosk";
-  systemd.user.services.nyxtkiosk1 = {
-    description = "launch kiosk";
-    serviceConfig.PassEnvironment = "DISPLAY";
-    script = ''
-      nyxt-cage
-    '';
-    wantedBy = [ "multi-user.target" ];
+  # services.getty.autologinUser = "nyxtkiosk";
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        # command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd 'sway'";
+        command = "sway";
+        user = "nyxtkiosk";
+      };
+      initial_session = {
+        command = "nyxt-cage";
+        user = "nyxtkiosk";
+      };
+    };
   };
 
   # state
