@@ -1,1 +1,49 @@
 # nyxt-nix-kiosk
+
+NixOS config to run the [NYXT](https://nyxt.atlas.engineer/) browser standalone under either the kiosk compositor [cage](https://github.com/cage-kiosk/cage) or Valve's gaming-oriented microcompositor [gamescope](https://github.com/ValveSoftware/gamescope)
+
+## Notes
+
+The default installation is for an apple-silicon machine using the asahi kernel. If you are using an apple-silicon machine, then replace `apple-silicon-support/hardware-configuration.nix` with your own copy from the output of `nixos-generate-config`.
+
+If you are not using an apple-silicon machine, comment out `./apple-silicon-support` from the imports in `configuration.nix` and import your own copy of `hardware-configuration.nix`. Add/remove/adjust options as needed. By default the hostname is `nyxtkiosk`. Change it as needed
+
+## Installation
+
+This guide assumes you either already have a full installation of NixOS or are in a live CD. If you have trouble installing NixOS, use the official [manual](https://nixos.org/manual/nixos/unstable/)
+
+First clone and enter the repo (`git clone --depth 1 https://github.com/shaunsingh/nyxt-nix-kiosk.git && cd nyxt-nix-kiosk`). Adjust imports in `configuration.nix` and add your `hardware-configuration.nix` as needed
+
+If you are currently in a live CD, run `nixos-install --flake .#nyxtkiosk`
+
+If you are currently in a full installation, run `sudo nixos-rebuild switch --flake .#nyxtkiosk`
+
+Finally, use `passwd` to set a password for the `nyxtkiosk` user, reboot if needed, and enjoy!
+
+## Configuration
+
+By default, a copy of my `sway` configuration is imported, as NYXT does not completely fulfill my needs quite yet. Uncomment `./sway` from the imports in `configuration.nix` if you'd like to use just the kiosk mode.
+
+Adjust the options for `nyxt4-wrapped` in `configuration.nix` to suit your needs. The defaults are as follows. 
+
+```
+# configuration for nyxt kiosk
+nyxt4-wrapped = {
+  display = "eDP-1";
+  resolution = "2560x1600";
+  scale = 2;
+};
+```
+
+You may check the former two for your own machine by running `wlr-randr` under `sway` or any wayland compositor. Scale is subjective, adjust as you see fit, generally for a hidpi machine you want 2, stick with 1 for any lower resolution displays.
+
+Otherwise, just modify NYXT's config at `~/.config/nyxt/lisp` as you'd like. A copy of my personal NYXT config is provided with no warranty at `nyxt4-unwrapped/config.lisp` 
+
+## Usage
+
+By default `nyxt-nix-kiosk` does not ship with a display manager, so you will be met with the TUI. Login with the credentials established in the previous step. You may now do one of the following:
+
+- (recommended) run `nyxt-cage` to launch NYXT under the cage compositor
+- Run `nyxt-gamescope` to launch NYXT under Valve's gamescope microcompositor
+- If you left `./sway` imported, run `sway` to launch my sway configuration, open the launcher with `meta+space`, launch `nyxt`, and optionally use `cmd+f` to fullscreen. The full keybinds can be found in `/sway/home.nix`
+- Use the TTY as you wish

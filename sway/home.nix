@@ -293,7 +293,7 @@ in {
   home.pointerCursor = {
     name = "phinger-cursors";
     package = pkgs.phinger-cursors;
-    size = 32;
+    size = 256;
   };
   gtk = {
     cursorTheme = {
@@ -313,7 +313,7 @@ in {
   };
   home.sessionVariables = {
     XCURSOR_THEME = "phinger-cursors";
-    XCURSOR_SIZE = "32";
+    # XCURSOR_SIZE = "32";
   };
 
   ### -- terminal 

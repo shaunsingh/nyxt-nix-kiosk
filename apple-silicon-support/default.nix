@@ -9,6 +9,10 @@
   # default is impure, use local firmware
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
+  # other asahi options
+  hardware.asahi.withRust = true;
+  hardware.asahi.useExperimentalGPUDriver = true;
+
   # wpa_supplicant + wpa3 iffy
   networking.wireless.iwd = {
     enable = true;

@@ -23,7 +23,7 @@
     inherit (self) outputs;
   in {
     nixosConfigurations = {
-      shaurizard = nixpkgs.lib.nixosSystem {
+      nyxtkiosk = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
           ./configuration.nix 

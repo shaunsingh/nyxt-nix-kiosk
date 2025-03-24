@@ -8,9 +8,16 @@
 
   imports = [
     ./apple-silicon-support  # asahi support
-    ./nyxt4-gamescope        # nyxt kiosk under gamescope
-    # ./sway                   # sway for when nyxt doesn't work
+    ./nyxt4-wrapped          # nyxt kiosk
+    ./sway                   # sway for when nyxt doesn't work
   ];
+
+  # configuration for nyxt kiosk
+  nyxt4-wrapped = {
+    display = "eDP-1";
+    resolution = "2560x1600";
+    scale = 2;
+  };
 
   # theme our console
   console =
@@ -34,10 +41,12 @@
     vulkan-tools
   ];
 
+  # graphics
+  hardware.graphics.enable = true;
 
   # default user config
   users.users = {
-    shaurizard = {
+    nyxtkiosk = {
       isNormalUser = true;
       extraGroups = [
         "wheel"
@@ -49,13 +58,13 @@
   };
 
   # backup kde
-  services = {
-    desktopManager.plasma6.enable = true;
-    displayManager.sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-  };
+#   services = {
+#     desktopManager.plasma6.enable = true;
+#     displayManager.sddm = {
+#       enable = true;
+#       wayland.enable = true;
+#     };
+#   };
 
   # state
   i18n = {
@@ -63,6 +72,6 @@
     supportedLocales = [ "en_US.UTF-8/UTF-8" ];
   };
 
-  networking.hostName = "shaurizard";
+  networking.hostName = "nyxtkiosk";
   system.stateVersion = "23.05";
 }
