@@ -41,17 +41,21 @@ in {
       # apps
       nyxt4
       cage
+
+      # tools
       wlr-randr
+      grim
+      slurp
   
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
         gamescope -f -s ${builtins.toString config.nyxt4-wrapped.scale} -- nyxt "$@"
       '')
       (pkgs.writeShellScriptBin "nyxt-cage" ''
-        cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${builtins.toString config.nyxt4-wrapped.scale} && nyxt'
+        GTK_USE_PORTAL=0 cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${builtins.toString config.nyxt4-wrapped.scale} && nyxt'
       '')
-  
-      # cage
+ 
+      # dev dependencies 
       zola 
     ] ++ (with pkgs.python3Packages; [
       grip

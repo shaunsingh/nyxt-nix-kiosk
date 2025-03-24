@@ -198,14 +198,15 @@
         :color ,(make-important *base0F-*))
       `("h5"
         :color ,(make-important *base09-*))
-      `("li, ul, a"
-        :color ,*base04-*
-        :font-size "13px")
-      `("a code, p code"
-        :background-color ,*base02-*
-        :color ,*base05-*
-        :white-space "pre-wrap"
-        :font-size "13px")
+      `("a"
+        :color ,*base06-*)
+      `("li, ul, pre"
+        :color ,*base05-*)
+      `("a code, p code, pre, code"
+        :font-family ,*mono*
+        :background-color ,*base01-*
+        :color ,*base06-*
+        :white-space "pre-wrap")
       `("hr, .button"
         :background-color ,(make-important *base01-*)
         :border-color ,(make-important *base01-*)
@@ -253,87 +254,73 @@
   ((style
     (theme:themed-css (theme *browser*)
       `(*
-        :font-family ,*font*
+        :font-family ,*mono*
         :font-size "13px")
       `(body
         :background-color ,*base00-*
+        :color ,*base04-*
         :margin "0")
       '("#root"
         :height "100%"
         :display "grid"
         :grid-template-rows "auto 1fr")
       `("#prompt-area"
-        :margin "4px"
-        :background-color ,*base01-*
+        :background-color ,*base02-*
         :color ,*base05-*
+        :overflow "hidden"
+        :white-space "nowrap"
         :display "grid"
         :grid-template-columns "auto auto 1fr auto auto")
       `("#prompt"
-        :background-color ,*base01-*
-        :color ,*base05-*
-        :padding-left "10px"
-        :line-height "28px"
         :max-width "40ch"
-        :overflow "hidden"
-        :white-space "nowrap"
         :text-overflow "ellipsis")
-      '("#prompt-input"
-        :min-width "10ch"
-        :line-height "28px"
-        :padding-right "10px")
+      `("#prompt, #prompt-input, #prompt-modes, #close-button"
+	:padding "3px"
+	:padding-top "6px"
+	:padding-left "9px")
+      `("#prompt-modes, #close-button"
+	:padding-right "3px"
+	:padding-left "3px"
+        :background-color ,*base01-*)
       `("#prompt-extra"
-        :font-family ,*mono*
-        :min-width "12px"
-        :background-color ,*base01-*
-        :color ,*base05-*
-        :line-height "28px"
-        :padding-right "5px")
+	:padding-right "9px")
       `("#prompt-modes"
-        :line-height "28px"
-        :padding-left "3px"
-        :padding-right "3px")
-      `("#close-button"
-        :text-align "right"
-        :padding-right "7px"
+	:padding-left "9px")
+      `("#prompt-input"
         :background-color ,*base01-*
-        :min-width "24px"
-        :line-height "28px"
-        :font-weight "bold"
-        :font-size "20px")
-      '(button
+        :min-width "10ch")
+      `("#close-button"
+        :text-align "right")
+      `(button
+        :color ,*base04-*
         :background "transparent"
-        :color "inherit"
         :text-decoration "none"
         :border "none"
-        :padding 0
         :font "inherit"
         :outline "inherit")
-      `(.button.action
-        :background-color ,*base0C-*
-        :color ,*base04-*)
       `((:and .button :hover)
         :cursor "pointer"
-        :color ,*base06-*)
+        :color ,*base06-*
+        :font-weight "bold")
+      `(".button svg path"
+        :stroke ,*base04-*)
       `(".button:hover svg path"
-        :stroke ,*base0C-*)
+        :stroke ,*base06-*)
       `((:and .button (:or :visited :active))
-        :color ,*base00-*)
+        :color ,*base04-*)
       `(input
-        :font-family ,*mono*)
+	:background-color ,*base01-*
+	:padding "0"
+	:border-image-width "0")
       `("#input"
-        :height "28px"
-        :background-color ,*base01-*
-        :color ,*base05-*
+        :border "none"
+        :color ,*base06-*
         :outline "none"
         :width "100%"
         :autofocus "true")
       '(".source"
-        :margin-left "10px"
-        :margin-top "15px")
+        :margin-top "2px")
       `(".source-name"
-        :padding-left "4px"
-        :background-color ,*base08-*
-        :color ,*base04-*
         :background-color ,*base01-*
         :color ,*base05-*
         :display "flex"
@@ -344,7 +331,10 @@
       '(".source-name > div > button"
         :padding "5px 5px 5px 0px"
         :min-height "100%")
-      '("#next-source > svg, #previous-source > svg"
+      `("#next-source > svg"
+        :margin-left "9px")
+      `("#next-source > svg, #previous-source > svg"
+        :stroke ,*base06-*
         :margin-bottom "2px"
         :height "5px")
       '("#previous-source"
@@ -374,11 +364,12 @@
          :font-family ,*mono*)
         ("tr:hover"
          :background-color ,*base0C-*
-         :color ,*base04-*
-         :cursor "pointer")
+         :color ,*base06-*
+         :cursor "pointer"
+         :font-weight "bold")
         (th
-         :background-color ,*base0E-*
-         :color ,*base04-*
+         :background-color ,*base01-*
+         :color ,*base06-*
          :font-weight "normal"
          :padding-left "4px"
          :text-align "left"))
@@ -408,286 +399,286 @@
       :padding-left "9px"
       :margin "3px")))))
 
-;;; STARTPAGE
-
-(defparameter list-of-fruits
-  (list "abiu"
-        "açaí"
-        "acerola"
-        "ackee"
-        "african cucumber"
-        "apple"
-        "apricot"
-        "avocado"
-        "banana"
-        "bilberry"
-        "blackberry"
-        "blackcurrant"
-        "black sapote"
-        "blueberry"
-        "boysenberry"
-        "breadfruit"
-        "buddha's hand (fingered citron)"
-        "cactus pear"
-        "canistel"
-        "cempedak"
-        "cherimoya (Custard Apple)"
-        "cherry"
-        "chico fruit"
-        "cloudberry"
-        "coco De Mer"
-        "coconut"
-        "crab apple"
-        "cranberry"
-        "currant"
-        "damson"
-        "date"
-        "dragonfruit (or Pitaya)"
-        "durian"
-        "egg Fruit"
-        "elderberry"
-        "feijoa"
-        "fig"
-        "finger Lime (or Caviar Lime)"
-        "goji berry"
-        "gooseberry"
-        "grape"
-        "raisin"
-        "grapefruit"
-        "grewia asiatica (phalsa or falsa)"
-        "guava"
-        "hala Fruit"
-        "honeyberry"
-        "huckleberry"
-        "jabuticaba"
-        "jackfruit"
-        "jambul"
-        "japanese plum"
-        "jostaberry"
-        "jujube"
-        "juniper berry"
-        "kaffir Lime"
-        "kiwano (horned melon)"
-        "kiwifruit"
-        "kumquat"
-        "lemon"
-        "lime"
-        "loganberry"
-        "longan"
-        "loquat"
-        "lulo"
-        "lychee"
-        "magellan Barberry"
-        "mamey Apple"
-        "mamey Sapote"
-        "mango"
-        "mangosteen"
-        "marionberry"
-        "melon"
-        "cantaloupe"
-        "galia melon"
-        "honeydew"
-        "mouse melon"
-        "musk melon"
-        "watermelon"
-        "miracle fruit"
-        "monstera deliciosa"
-        "mulberry"
-        "nance"
-        "nectarine"
-        "orange"
-        "blood orange"
-        "clementine"
-        "mandarine"
-        "tangerine"
-        "papaya"
-        "passionfruit"
-        "pawpaw"
-        "peach"
-        "pear"
-        "persimmon"
-        "plantain"
-        "plum"
-        "prune (dried plum)"
-        "pineapple"
-        "pineberry"
-        "plumcot (or Pluot)"
-        "pomegranate"
-        "pomelo"
-        "purple mangosteen"
-        "quince"
-        "raspberry"
-        "salmonberry"
-        "rambutan (or Mamin Chino)"
-        "redcurrant"
-        "rose apple"
-        "salal berry"
-        "salak"
-        "satsuma"
-        "shine Muscat or Vitis Vinifera"
-        "sloe or Hawthorn Berry"
-        "soursop"
-        "star apple"
-        "star fruit"
-        "strawberry"
-        "surinam cherry"
-        "tamarillo"
-        "tamarind"
-        "tangelo"
-        "tayberry"
-        "ugli fruit"
-        "white currant"
-        "white sapote"
-        "yuzu"
-        "bell pepper"
-        "chile pepper"
-        "corn kernel"
-        "cucumber"
-        "eggplant"
-        "jalapeño"
-        "olive"
-        "pea"
-        "pumpkin"
-        "squash"
-        "tomato"
-        "zucchini"))
-
-;; nice words
-(defparameter list-of-pretty-words
-  (list "lovely"
-        "wonderful"
-        "delightful"
-        "beautiful"
-        "pleasant"
-        "adorable"
-        "sweet"
-        "delicious"
-        "charming"
-        "fantastic"
-        "gorgeous"
-        "heavenly"
-        "magnificent"
-        "radiant"
-        "splendid"
-        "exquisite"
-        "enchanting"
-        "serene"
-        "blissful"
-        "harmonious"
-        "majestic"
-        "tranquil"
-        "whimsical"
-        "ethereal"
-        "celestial"
-        "idyllic"
-        "mesmerizing"
-        "spellbinding"
-        "captivating"
-        "fascinating"
-        "riveting"
-        "enthralling"
-        "mesmerizing"
-        "inspiring"))
-
-;; have some alliteration word fun
-(defun fruit-of-the-day-message ()
-  (flet ((capitalize-word (word)
-           (concatenate 'string (string-upcase (subseq word 0 1))
-                              (subseq word 1))))
-    (let* ((current-time (local-time:now))
-           (current-day (aref local-time:+day-names+
-                              (local-time:timestamp-day-of-week current-time)))
-           (current-fruit (nth (mod (local-time:day-of current-time)
-                                    (length list-of-fruits))
-                               list-of-fruits))
-           (matching-words (remove-if-not (lambda (word)
-                                            (char= (char word 0)
-                                                   (char current-fruit 0)))
-                                          list-of-pretty-words))
-           (word (if matching-words
-                     (nth (random (length matching-words)) matching-words)
-                     (nth (random (length list-of-pretty-words))
-                          list-of-pretty-words))))
-      (format nil "Have ~A ~A ~A ~A!"
-              (if (member (char (string word) 0) '(#\a #\e #\i #\o #\u))
-                  "an" "a")
-              (capitalize-word word)
-              (capitalize-word current-fruit)
-              current-day))))
-
-;; stolen from time.lisp
-(defun sort-by-time (sequence &key (key #'last-access))
-  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-  (sort sequence #'local-time:timestamp> :key key))
-
-;; now to bring it all together
-(define-internal-page-command-global startpage ()
-    (buffer "*startpage*")
-  "my custom startpage"
-  (flet ((list-bookmarks (&key (limit 6) (separator " → "))
-           (spinneret:with-html-string
-             (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-               (alexandria:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-                 (dolist (bookmark (serapeum:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
-                   (:li (title bookmark) separator
-                        (:a :href (render-url (url bookmark))
-                            (render-url (url bookmark)))))
-                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
-    (let ((current-year (local-time:timestamp-year (local-time:now)))
-          (dashboard-style (theme:themed-css (theme *browser*)
-                              `("#motto"
-                                :font-size "27px"
-                                :margin"18px"
-                                :margin-left "3px"
-                                :color ,*base08*)
-                              `("#copyright"
-                                :position "absolute"
-                                :text-align "right"
-                                :bottom "1.5em"
-                                :right "1.5em"))))
-     (spinneret:with-html-string
-       (:nstyle dashboard-style)
-       (:div :id "container"
-        (:h1 "Welcome to " (:span :id "subtitle" "NYXT ☺"))
-        (:div :id "buttons"
-         (:nbutton :text "Restore Session"
-           (nyxt::restore-history-by-name))
-         (:nbutton :text "Open Repl"
-           (nyxt/repl-mode:repl))
-         (:nbutton :text "View Changelog"
-           (nyxt:changelog))
-         (:nbutton :text "View Bookmarks"
-           (nyxt/bookmark-mode:list-bookmarks))
-         (:nbutton :text "View Annotations"
-           (nyxt/annotate-mode:show-annotations)))
-        (:div :id "motto"
-         "私たちのミッションは"
-         (:br)
-         "先端工学を用いて上質で"
-         (:br)
-         "機能的なデザインの"
-         (:br)
-         "製品を作り出すことです。")
-        (:h2 "Recents")
-        (:h3 "Bookmarks")
-        (:ul (:raw (list-bookmarks :limit 9)))
-        (:h3 "History")
-        (:ul (:raw (nyxt::history-html-list :limit 9)))
-        (:h2 (fruit-of-the-day-message))
-        (:div :id "copyright"
-          (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
-          (:br)
-          (format nil "lisp ~a ~a" (lisp-implementation-type) (lisp-implementation-version))
-          (:br)
-          (format nil "host ~a@~a" (software-type) (software-version))
-          (:br)
-          (format nil "Atlas Engineer LLC, 2018-~a" current-year)
-          (:br)
-          (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+)))))))
-
-;; set default url to startpage
-(define-configuration browser
-  ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
+;; ;;; STARTPAGE
+;; 
+;; (defparameter list-of-fruits
+;;   (list "abiu"
+;;         "açaí"
+;;         "acerola"
+;;         "ackee"
+;;         "african cucumber"
+;;         "apple"
+;;         "apricot"
+;;         "avocado"
+;;         "banana"
+;;         "bilberry"
+;;         "blackberry"
+;;         "blackcurrant"
+;;         "black sapote"
+;;         "blueberry"
+;;         "boysenberry"
+;;         "breadfruit"
+;;         "buddha's hand (fingered citron)"
+;;         "cactus pear"
+;;         "canistel"
+;;         "cempedak"
+;;         "cherimoya (Custard Apple)"
+;;         "cherry"
+;;         "chico fruit"
+;;         "cloudberry"
+;;         "coco De Mer"
+;;         "coconut"
+;;         "crab apple"
+;;         "cranberry"
+;;         "currant"
+;;         "damson"
+;;         "date"
+;;         "dragonfruit (or Pitaya)"
+;;         "durian"
+;;         "egg Fruit"
+;;         "elderberry"
+;;         "feijoa"
+;;         "fig"
+;;         "finger Lime (or Caviar Lime)"
+;;         "goji berry"
+;;         "gooseberry"
+;;         "grape"
+;;         "raisin"
+;;         "grapefruit"
+;;         "grewia asiatica (phalsa or falsa)"
+;;         "guava"
+;;         "hala Fruit"
+;;         "honeyberry"
+;;         "huckleberry"
+;;         "jabuticaba"
+;;         "jackfruit"
+;;         "jambul"
+;;         "japanese plum"
+;;         "jostaberry"
+;;         "jujube"
+;;         "juniper berry"
+;;         "kaffir Lime"
+;;         "kiwano (horned melon)"
+;;         "kiwifruit"
+;;         "kumquat"
+;;         "lemon"
+;;         "lime"
+;;         "loganberry"
+;;         "longan"
+;;         "loquat"
+;;         "lulo"
+;;         "lychee"
+;;         "magellan Barberry"
+;;         "mamey Apple"
+;;         "mamey Sapote"
+;;         "mango"
+;;         "mangosteen"
+;;         "marionberry"
+;;         "melon"
+;;         "cantaloupe"
+;;         "galia melon"
+;;         "honeydew"
+;;         "mouse melon"
+;;         "musk melon"
+;;         "watermelon"
+;;         "miracle fruit"
+;;         "monstera deliciosa"
+;;         "mulberry"
+;;         "nance"
+;;         "nectarine"
+;;         "orange"
+;;         "blood orange"
+;;         "clementine"
+;;         "mandarine"
+;;         "tangerine"
+;;         "papaya"
+;;         "passionfruit"
+;;         "pawpaw"
+;;         "peach"
+;;         "pear"
+;;         "persimmon"
+;;         "plantain"
+;;         "plum"
+;;         "prune (dried plum)"
+;;         "pineapple"
+;;         "pineberry"
+;;         "plumcot (or Pluot)"
+;;         "pomegranate"
+;;         "pomelo"
+;;         "purple mangosteen"
+;;         "quince"
+;;         "raspberry"
+;;         "salmonberry"
+;;         "rambutan (or Mamin Chino)"
+;;         "redcurrant"
+;;         "rose apple"
+;;         "salal berry"
+;;         "salak"
+;;         "satsuma"
+;;         "shine Muscat or Vitis Vinifera"
+;;         "sloe or Hawthorn Berry"
+;;         "soursop"
+;;         "star apple"
+;;         "star fruit"
+;;         "strawberry"
+;;         "surinam cherry"
+;;         "tamarillo"
+;;         "tamarind"
+;;         "tangelo"
+;;         "tayberry"
+;;         "ugli fruit"
+;;         "white currant"
+;;         "white sapote"
+;;         "yuzu"
+;;         "bell pepper"
+;;         "chile pepper"
+;;         "corn kernel"
+;;         "cucumber"
+;;         "eggplant"
+;;         "jalapeño"
+;;         "olive"
+;;         "pea"
+;;         "pumpkin"
+;;         "squash"
+;;         "tomato"
+;;         "zucchini"))
+;; 
+;; ;; nice words
+;; (defparameter list-of-pretty-words
+;;   (list "lovely"
+;;         "wonderful"
+;;         "delightful"
+;;         "beautiful"
+;;         "pleasant"
+;;         "adorable"
+;;         "sweet"
+;;         "delicious"
+;;         "charming"
+;;         "fantastic"
+;;         "gorgeous"
+;;         "heavenly"
+;;         "magnificent"
+;;         "radiant"
+;;         "splendid"
+;;         "exquisite"
+;;         "enchanting"
+;;         "serene"
+;;         "blissful"
+;;         "harmonious"
+;;         "majestic"
+;;         "tranquil"
+;;         "whimsical"
+;;         "ethereal"
+;;         "celestial"
+;;         "idyllic"
+;;         "mesmerizing"
+;;         "spellbinding"
+;;         "captivating"
+;;         "fascinating"
+;;         "riveting"
+;;         "enthralling"
+;;         "mesmerizing"
+;;         "inspiring"))
+;; 
+;; ;; have some alliteration word fun
+;; (defun fruit-of-the-day-message ()
+;;   (flet ((capitalize-word (word)
+;;            (concatenate 'string (string-upcase (subseq word 0 1))
+;;                               (subseq word 1))))
+;;     (let* ((current-time (local-time:now))
+;;            (current-day (aref local-time:+day-names+
+;;                               (local-time:timestamp-day-of-week current-time)))
+;;            (current-fruit (nth (mod (local-time:day-of current-time)
+;;                                     (length list-of-fruits))
+;;                                list-of-fruits))
+;;            (matching-words (remove-if-not (lambda (word)
+;;                                             (char= (char word 0)
+;;                                                    (char current-fruit 0)))
+;;                                           list-of-pretty-words))
+;;            (word (if matching-words
+;;                      (nth (random (length matching-words)) matching-words)
+;;                      (nth (random (length list-of-pretty-words))
+;;                           list-of-pretty-words))))
+;;       (format nil "Have ~A ~A ~A ~A!"
+;;               (if (member (char (string word) 0) '(#\a #\e #\i #\o #\u))
+;;                   "an" "a")
+;;               (capitalize-word word)
+;;               (capitalize-word current-fruit)
+;;               current-day))))
+;; 
+;; ;; stolen from time.lisp
+;; (defun sort-by-time (sequence &key (key #'last-access))
+;;   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
+;;   (sort sequence #'local-time:timestamp> :key key))
+;; 
+;; ;; now to bring it all together
+;; (define-internal-page-command-global startpage ()
+;;     (buffer "*startpage*")
+;;   "my custom startpage"
+;;   (flet ((list-bookmarks (&key (limit 6) (separator " → "))
+;;            (spinneret:with-html-string
+;;              (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
+;;                (alexandria:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
+;;                  (dolist (bookmark (serapeum:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+;;                    (:li (title bookmark) separator
+;;                         (:a :href (render-url (url bookmark))
+;;                             (render-url (url bookmark)))))
+;;                  (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+;;     (let ((current-year (local-time:timestamp-year (local-time:now)))
+;;           (dashboard-style (theme:themed-css (theme *browser*)
+;;                               `("#motto"
+;;                                 :font-size "27px"
+;;                                 :margin"18px"
+;;                                 :margin-left "3px"
+;;                                 :color ,*base08*)
+;;                               `("#copyright"
+;;                                 :position "absolute"
+;;                                 :text-align "right"
+;;                                 :bottom "1.5em"
+;;                                 :right "1.5em"))))
+;;      (spinneret:with-html-string
+;;        (:nstyle dashboard-style)
+;;        (:div :id "container"
+;;         (:h1 "Welcome to " (:span :id "subtitle" "NYXT ☺"))
+;;         (:div :id "buttons"
+;;          (:nbutton :text "Restore Session"
+;;            (nyxt::restore-history-by-name))
+;;          (:nbutton :text "Open Repl"
+;;            (nyxt/repl-mode:repl))
+;;          (:nbutton :text "View Changelog"
+;;            (nyxt:changelog))
+;;          (:nbutton :text "View Bookmarks"
+;;            (nyxt/bookmark-mode:list-bookmarks))
+;;          (:nbutton :text "View Annotations"
+;;            (nyxt/annotate-mode:show-annotations)))
+;;         (:div :id "motto"
+;;          "私たちのミッションは"
+;;          (:br)
+;;          "先端工学を用いて上質で"
+;;          (:br)
+;;          "機能的なデザインの"
+;;          (:br)
+;;          "製品を作り出すことです。")
+;;         (:h2 "Recents")
+;;         (:h3 "Bookmarks")
+;;         (:ul (:raw (list-bookmarks :limit 9)))
+;;         (:h3 "History")
+;;         (:ul (:raw (nyxt::history-html-list :limit 9)))
+;;         (:h2 (fruit-of-the-day-message))
+;;         (:div :id "copyright"
+;;           (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
+;;           (:br)
+;;           (format nil "lisp ~a ~a" (lisp-implementation-type) (lisp-implementation-version))
+;;           (:br)
+;;           (format nil "host ~a@~a" (software-type) (software-version))
+;;           (:br)
+;;           (format nil "Atlas Engineer LLC, 2018-~a" current-year)
+;;           (:br)
+;;           (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+)))))))
+;; 
+;; ;; set default url to startpage
+;; (define-configuration browser
+;;   ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
 
 ;;; COMMANDS
 
@@ -759,24 +750,6 @@ A poor man's vsplit :("
   (delete-all-panel-buffers)
   (uiop:launch-program "pkill grip"))
 
-(define-command-global open-terminal ()
-  "Open a terminal in a new buffer"
-  (let ((term-buffer (make-buffer :title "*term*"
-                                  :url "http://localhost:7681/"
-                                  :modes 'nyxt/mode/passthrough:passthrough-mode)))
-    (set-current-buffer term-buffer)))
-
-(define-panel-command-global open-terminal-split ()
-    (panel "*term split*" :right)
-  "Open a terminal on the right buffer"
-  (run-thread "term loader"
-    (setf 
-      (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
-    (sleep 0.3)
-    (buffer-load (quri:uri "http://localhost:7681/")
-                 :buffer panel))
-  "")
-
 (define-panel-command-global zola-preview () 
   (panel "*zola preview*" :right) 
   "Open the Zola preview of the current markdown file on the right buffer"
@@ -820,6 +793,22 @@ A poor man's vsplit :("
   (delete-all-panel-buffers)
   (uiop:launch-program "pkill zola"))
 
+;;; SYSTEM
+
+(define-command-global screenshot ()
+  "Take a screenshot"
+  (uiop:launch-program "grim"))
+
+(define-command-global screenshot-to-clipboard ()
+  "Take a screenshot to clipboard"
+  (uiop:launch-program "grim - | wl-copy"))
+
+(define-command-global screenshot-region ()
+  "Take a screenshot of a region and copy to clipboard"
+  (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
+
+;;; FETCH
+
 (defun mem-total ()
     (float 
        (/ (parse-integer (string-trim "MemTotal:       kB " (uiop:read-file-line "/proc/meminfo" :at 0))) (* 1024 1024))))
@@ -837,9 +826,11 @@ A poor man's vsplit :("
   "my custom fetch"
   (let ((dashboard-style (theme:themed-css (theme *browser*)
                             `("#fetch"
+                              :font-family ,*mono*
                               :font-size "18px"
                               :margin "18px"
-                              :color ,*base05*))))
+                              :color ,*base05-*
+                              :background-color ,*base01-*))))
    (spinneret:with-html-string
      (:nstyle dashboard-style)
      (:div :id "container"

@@ -183,7 +183,8 @@ in {
         {
           "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
           # "${modifier}+d" = "exec ${pkgs.kickoff}/bin/kickoff";
-          "${modifier}+p" = "exec ${screenshot}/bin/screenshot";
+          # "${modifier}+p" = "exec ${screenshot}/bin/screenshot";
+          "${modifier}+p" = "exec ${pkgs.grim}/bin/grim";
           "${modifier}+Shift+p" = "exec ${ocrScript}/bin/wl-ocr";
           "${modifier}+v" = "exec ${volume}/bin/volume -d 5";
           "${modifier}+b" = "exec ${volume}/bin/volume -i 5";
