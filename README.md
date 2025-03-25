@@ -8,6 +8,8 @@ The default installation is for an apple-silicon machine using the asahi kernel.
 
 If you are not using an apple-silicon machine, comment out `./apple-silicon-support` from the imports in `configuration.nix` and import your own copy of `hardware-configuration.nix`. Add/remove/adjust options as needed. By default the hostname is `nyxtkiosk`. Change it as needed
 
+By default, `nyxt4-wrapped/default.nix` builds a pre-release of NYXT 4.0 with WebkitGTK built with support for DRM. As a result, the build may take a while and your config may be unsupported. Adjust as needed
+
 ## Installation
 
 This guide assumes you either already have a full installation of NixOS or are in a live CD. If you have trouble installing NixOS, use the official [manual](https://nixos.org/manual/nixos/unstable/)
@@ -44,3 +46,5 @@ nyxt4-wrapped = {
 You may check the former two for your own machine by running `wlr-randr` under `sway` or any wayland compositor. Scale is subjective, adjust as you see fit, generally for a hidpi machine you want 2, stick with 1 for any lower resolution displays.
 
 Otherwise, just modify NYXT's config at `~/.config/nyxt/lisp` as you'd like. A copy of my personal NYXT config is provided with no warranty at `nyxt4-unwrapped/config.lisp` 
+
+This file was written with `ace-mode` in NYXT

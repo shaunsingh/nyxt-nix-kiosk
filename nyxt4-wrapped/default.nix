@@ -5,7 +5,21 @@ let
   otf-apple = pkgs.callPackage ./otf-apple.nix { };
   sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix { };
 
-  # nyxt wrappers
+  # enable DRM support
+  webkitgtk-eme = pkgs.webkitgtk.overrideAttrs (oldAttrs: rec {
+    buildInputs =
+      oldAttrs.buildInputs
+      ++ [
+        pkgs.libgpg-error
+      ];
+    cmakeFlags =
+      oldAttrs.cmakeFlags
+      ++ [
+        "-DENABLE_ENCRYPTED_MEDIA=ON"
+      ];
+  });
+
+  # nyxt prerelease w/ DRM support
   nyxt4 = pkgs.nyxt.overrideAttrs (oldAttrs: rec {
     pname = "nyxt4";
     version = "4.0.0-pre-release-3";
@@ -14,6 +28,19 @@ let
       hash = "sha256-T5p3OaWp28rny81ggdE9iXffmuh6wt6XSuteTOT8FLI=";
       stripRoot = false;
     };
+    LD_LIBRARY_PATH = 
+      lib.makeLibraryPath
+      [
+        pkgs.glib
+        pkgs.gobject-introspection
+        pkgs.gdk-pixbuf
+        pkgs.cairo
+        pkgs.pango
+        pkgs.gtk3
+        pkgs.openssl
+        pkgs.libfixposix
+        webkitgtk-eme
+      ];
   });
 in {
   options.nyxt4-wrapped = {

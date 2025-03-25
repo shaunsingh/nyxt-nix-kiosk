@@ -14,128 +14,9 @@
 (define-configuration nyxt/mode/reduce-tracking:reduce-tracking-mode
   ((nyxt/mode/reduce-tracking:query-tracking-parameters
     (append '("utm_source" "utm_medium" "utm_campaign" "utm_term" "utm_content")
-            %slot-value%))))
-
-;;; STATUS
-
-;; ;; quick parenscript to grab out position in the buffer
-;; (define-parenscript %percentage ()
-;;   (defun percentage ()
-;;     (let* ((height-of-window (ps:@ window inner-height))
-;;            (content-scrolled (ps:@ window page-y-offset))
-;;            (body-height (if (not (or (eql window undefined)
-;;                                      (eql (ps:@ window document) undefined)
-;;                                      (eql (ps:chain window
-;;                                                     document
-;;                                                     (get-elements-by-tag-name "body"))
-;;                                           undefined)
-;;                                      (eql (ps:chain window
-;;                                                     document
-;;                                                     (get-elements-by-tag-name "body")
-;;                                                     0)
-;;                                           undefined)
-;;                                      (eql (ps:chain window
-;;                                                     document
-;;                                                     (get-elements-by-tag-name "body")
-;;                                                     0
-;;                                                     offset-height)
-;;                                           undefined)))
-;;                           (ps:chain window
-;;                                     document
-;;                                     (get-elements-by-tag-name "body")
-;;                                     0
-;;                                     offset-height)
-;;                           0))
-;;            (total (- body-height height-of-window))
-;;            (prc (* (/ content-scrolled total) 100)))
-;;       (if (> prc 100)
-;;           100
-;;           (round prc))))
-;;   (percentage))
- 
-;; (defmethod my-format-status-load-status ((status status-buffer))
-;;   "Render the load status to HTML string"theme:on-background-color
-;;   (let ((buffer (current-buffer (window status))))
-;;     (if (web-buffer-p buffer)
-;;         (case (slot-value buffer 'status)
-;;           (:loading "∞ ")
-;;           (:unloaded "∅ ")
-;;           (:finished ""))
-;;         "")))
-
-(defmethod my-format-status-url ((status status-buffer))
-  "Format the current URL for the STATUS buffer"
-  (let* ((buffer (current-buffer (window status)))
-         (url-display (multiple-value-bind (aesthetic safe)
-                          (render-url (url buffer))
-                        (uiop:strcat
-                         (if safe
-                             (format nil "~a (~a)" safe aesthetic)
-                             ;; RFC 2068 says 255 bytes is recommended max, thats 32 characters
-                             ;; 62 is the average, so 32 should be ample for the nessecary info
-                             (str:prune 32 aesthetic :ellipsis "…"))
-                         (when (title buffer)
-                           (str:concat " — " (title buffer)))
-                         (when (find (url buffer) (remove buffer (buffer-list))
-                                     :test #'url-equal :key #'url)
-                           (format nil " (buffer ~a)" (id buffer)))))))
-    (spinneret:with-html-string
-      (:nbutton :buffer status :text url-display :title url-display
-        '(nyxt:set-url)))))
- 
-(defun enabled-modes-string (buffer)
-  "Only return enabled modes."
-  (when (modable-buffer-p buffer)
-    (format nil "~{~a~^~%~}" (mapcar #'princ-to-string (serapeum:filter #'enabled-p (modes buffer))))))
-
-(defmethod my-format-minions ((status status-buffer))
-  (let ((buffer (current-buffer (window status))))
-    (if (modable-buffer-p buffer)
-        (spinneret:with-html-string
-          (:nbutton
-            :buffer status
-            :text ";-"
-            :title (str:concat "Enabled modes: " (enabled-modes-string buffer))
-            '(nyxt:toggle-modes)))
-    "")))
-
-(defmethod my-format-modes ((status status-buffer))
-  (let ((buffer (current-buffer (window status))))
-    (if (modable-buffer-p buffer)
-      (str:concat "(" (enabled-modes-string buffer) ")")
-      "")))
- 
-(defmethod format-status ((status status-buffer))
-  (let* ((buffer (current-buffer (window status)))
-         (buffer-count (1+ (or (position buffer
-                                         (sort (buffer-list) #'url-equal :key #'url))
-                               0))))
-    (spinneret:with-html-string
-      (:div :id "container"
-            ;; for looks, I should probably make this functional
-            (:div :id "vi-mode" "U:**-")
-            (:div :id "buffers"
-                  (format nil "[~a/~a]"
-                      buffer-count
-                      (length (buffer-list))))
-;;             (:div :id "percentage"
-;;                   (format nil "L~a"
-;;                       (%percentage)))
-             ;;(:div :id "load"
-             ;;      (:raw
-             ;;       (my-format-status-load-status status)))
-             (:div :id "url"
-                   (:raw
-                    (my-format-status-url status)))
-             (:div :id "minions"
-                   (:raw 
-                    (my-format-minions status)))
-             (:div :id "tabs"
-                   (:raw
-                    (format-status-tabs status)))
-             (:div :id "modes"
-                   (:raw
-		     (my-format-modes status)))))))
+            %slot-value%))
+    (preferred-user-agent
+     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36")))
 
 ;;; COLORSCHEME
 
@@ -229,16 +110,13 @@
         :display "flex"
         :white-space "nowrap"
         :overflow "hidden")
-      `("#vi-mode, #buffers, #load, #percentage, #url, #minions, #tabs, #modes"
+      `("#vi-mode, #buffers, #load, #percentage, #url, #minions, #tab, #modes"
         :padding-left "9px")
-      `("#url"
-        :color ,*base06-* 
-        :font-weight "bold")
       `("#modes"
         :color "#a2a9b0")
       `(button
-        :all "unset"
-        :color ,*base04-*)
+        :all "unset")
+        ;;:color ,*base06-*)
       `((:and (:or .button .tab "#url") :hover)
         :font-weight "bold"
         :cursor "pointer")))))
@@ -635,6 +513,7 @@
 	                        :margin-top "9px"
                                 :font-size "18px")
                               `("#copyright"
+                                :font-family ,*mono*
                                 :position "absolute"
                                 :text-align "right"
                                 :bottom "1.5em"
@@ -1477,6 +1356,190 @@ currently active buffer."
 
 ;;; ZOTERO
 
+;;; STATUS
+
+;; ;; quick parenscript to grab out position in the buffer
+;; (define-parenscript %percentage ()
+;;   (defun percentage ()
+;;     (let* ((height-of-window (ps:@ window inner-height))
+;;            (content-scrolled (ps:@ window page-y-offset))
+;;            (body-height (if (not (or (eql window undefined)
+;;                                      (eql (ps:@ window document) undefined)
+;;                                      (eql (ps:chain window
+;;                                                     document
+;;                                                     (get-elements-by-tag-name "body"))
+;;                                           undefined)
+;;                                      (eql (ps:chain window
+;;                                                     document
+;;                                                     (get-elements-by-tag-name "body")
+;;                                                     0)
+;;                                           undefined)
+;;                                      (eql (ps:chain window
+;;                                                     document
+;;                                                     (get-elements-by-tag-name "body")
+;;                                                     0
+;;                                                     offset-height)
+;;                                           undefined)))
+;;                           (ps:chain window
+;;                                     document
+;;                                     (get-elements-by-tag-name "body")
+;;                                     0
+;;                                     offset-height)
+;;                           0))
+;;            (total (- body-height height-of-window))
+;;            (prc (* (/ content-scrolled total) 100)))
+;;       (if (> prc 100)
+;;           100
+;;           (round prc))))
+;;   (percentage))
+ 
+;; (defmethod my-format-status-load-status ((status status-buffer))
+;;   "Render the load status to HTML string"theme:on-background-color
+;;   (let ((buffer (current-buffer (window status))))
+;;     (if (web-buffer-p buffer)
+;;         (case (slot-value buffer 'status)
+;;           (:loading "∞ ")
+;;           (:unloaded "∅ ")
+;;           (:finished ""))
+;;         "")))
+
+(defmethod my-format-status-url ((status status-buffer))
+  "Format the current URL for the STATUS buffer"
+  (let* ((buffer (current-buffer (window status)))
+         (url-display (multiple-value-bind (aesthetic safe)
+                          (render-url (url buffer))
+                        (uiop:strcat
+                         (if safe
+                             (format nil "~a (~a)" safe aesthetic)
+                             ;; RFC 2068 says 255 bytes is recommended max, thats 32 characters
+                             ;; 62 is the average, so 32 should be ample for the nessecary info
+                             (str:prune 32 aesthetic :ellipsis "…"))
+                         (when (title buffer)
+                           (str:concat " — " (title buffer)))
+                         (when (find (url buffer) (remove buffer (buffer-list))
+                                     :test #'url-equal :key #'url)
+                           (format nil " (buffer ~a)" (id buffer)))))))
+    (spinneret:with-html-string
+      (:nbutton :buffer status :text url-display :title url-display
+        '(nyxt:set-url)))))
+ 
+(defun enabled-modes-string (buffer)
+  "Only return enabled modes."
+  (when (modable-buffer-p buffer)
+    (format nil "~{~a~^~%~}" (mapcar #'princ-to-string (serapeum:filter #'enabled-p (modes buffer))))))
+
+(defmethod my-format-minions ((status status-buffer))
+  (let ((buffer (current-buffer (window status))))
+    (if (modable-buffer-p buffer)
+        (spinneret:with-html-string
+          (:nbutton
+            :buffer status
+            :text ";-"
+            :title (str:concat "Enabled modes: " (enabled-modes-string buffer))
+            '(nyxt:toggle-modes)))
+    "")))
+
+(defmethod my-format-modes ((status status-buffer))
+  (let ((buffer (current-buffer (window status))))
+    (if (modable-buffer-p buffer)
+      (str:concat "(" (enabled-modes-string buffer) ")")
+      "")))
+
+(defun internal-buffer-list (&key (all nil))
+  (append (serapeum:filter #'internal-url-p (buffer-list))
+          (when all
+            (alexandria:flatten (loop for window in (window-list)
+                                      collect (active-prompt-buffers window)
+                                      collect (status-buffer window)
+                                      collect (message-buffer window))))))
+
+(defun switch-buffer-or-query-domain (domain)
+  (let ((matching-buffers (serapeum:filter (match-domain domain) (buffer-list))))
+    (if (eql 1 (length matching-buffers))
+        (set-current-buffer (first matching-buffers))
+        (switch-buffer-domain :domain domain))))
+
+(defmethod my-format-status-tabs ((status status-buffer))
+  "Render the open buffers to HTML string suitable for STATUS."
+  (let* ((buffers (if (display-tabs-by-last-access-p status)
+                      (sort-by-time (buffer-list))
+                      (reverse (buffer-list))))
+         (domain-deduplicated-urls (remove-duplicates (mapcar #'url buffers)
+                                                      :test #'string=
+                                                      :key #'quri:uri-domain)))
+    (spinneret:with-html-string
+      (loop for url in domain-deduplicated-urls
+            collect
+            (let* ((internal-buffers (internal-buffer-list))
+                   (domain (quri:uri-domain url))
+                   (tab-display-text (if (internal-url-p url) "internal" domain))
+                   (url url)
+                   (current-buffer (current-buffer (window status))))
+              (:span
+	       :id "tab"
+               :class (if (string= (quri:uri-domain (url current-buffer))
+                                   (quri:uri-domain url))
+                          "selected-tab tab"
+                          "tab")
+               :onclick (ps:ps
+                          (if (or (= (ps:chain window event which) 2)
+                                  (= (ps:chain window event which) 4))
+                              (nyxt/ps:lisp-eval
+                               (:title "delete-tab-group"
+                                :buffer status)
+                               (let ((buffers-to-delete
+                                       (if (internal-url-p url)
+                                           internal-buffers
+                                           (serapeum:filter (match-domain domain) buffers))))
+                                 (prompt
+                                  :prompt "Delete buffer(s)"
+                                  :sources (make-instance 'buffer-source
+                                                          :constructor buffers-to-delete
+                                                          :marks buffers-to-delete
+                                                          :actions-on-return (list (lambda-mapped-command buffer-delete))))))
+                              (nyxt/ps:lisp-eval
+                               (:title "select-tab-group"
+                                :buffer status)
+                               (if (internal-url-p url)
+                                   (prompt
+                                    :prompt "Switch to buffer with internal page"
+                                    :sources (make-instance 'buffer-source
+                                                            :constructor internal-buffers))
+                                   (switch-buffer-or-query-domain domain)))))
+               tab-display-text))))))
+
+(defmethod format-status ((status status-buffer))
+  (let* ((buffer (current-buffer (window status)))
+         (buffer-count (1+ (or (position buffer
+                                         (sort (buffer-list) #'url-equal :key #'url))
+                               0))))
+    (spinneret:with-html-string
+      (:div :id "container"
+            ;; for looks, I should probably make this functional
+            (:div :id "vi-mode" "U:**-")
+            (:div :id "buffers"
+                  (format nil "[~a/~a]"
+                      buffer-count
+                      (length (buffer-list))))
+;;             (:div :id "percentage"
+;;                   (format nil "L~a"
+;;                       (%percentage)))
+             (:div :id "url"
+                   (:raw
+                    ;;(my-format-status-load-status status)
+                    (my-format-status-url status)))
+             (:div :id "tabs"
+                   (:raw
+                    (my-format-status-tabs status)))
+             (:div :id "minions"
+                   (:raw 
+                    (my-format-minions status)))
+             (:div :id "modes"
+                   (:raw
+		     (my-format-modes status)))))))
+
+
+
 ;;; LOAD
 
 ;; simple web-buffer customization
@@ -1485,30 +1548,35 @@ currently active buffer."
    (default-modes `(,@*buffer-modes*
         ,@%slot-value%))))
 
-;; we wan't to be in insert mode in the prompt buffer
+;; we wan't to be in insert mode in the prompt buffer, don't show source if theres only one
 (define-configuration (prompt-buffer)
   ((default-modes `(vi-insert-mode
-         ,@%slot-value%))))
+         ,@%slot-value%))
+   (hide-single-source-header-p t)))
 
 ;;; WEBKIT
 
 ;; this was mostly guessing, thouogh this link provides basic docs for the options
 ;; https://webkitgtk.org/reference/webkit2gtk/stable/class.Settings.html#properties
 (defmethod ffi-buffer-make :after ((buffer buffer))
-  (let* ((settings (webkit:webkit-web-view-get-settings
-                    (nyxt/renderer/gtk::gtk-object buffer))))
-    (setf
-     ;; enable encrypted (DRM) content if possible
-     (webkit:webkit-settings-enable-encrypted-media settings) t
-     ;; enable resizable text areas
-     (webkit:webkit-settings-enable-resizable-text-areas settings) t
-     ;; enable inspect
-     (webkit:webkit-settings-enable-developer-extras settings) t
-     ;; enable webgl support
-     (webkit:webkit-settings-enable-webgl settings) t
-     ;; use SF Pro Text as proportional font
-     (webkit:webkit-settings-default-font-family settings) "SF Pro Text"
-     (webkit:webkit-settings-default-font-size settings) 15
-     ;; use Liga SFMono Nerd Font as monospace font
-     (webkit:webkit-settings-monospace-font-family settings) "Liga SFMono Nerd Font"
-     (webkit:webkit-settings-default-monospace-font-size settings) 13)))
+  (when (slot-boundp buffer 'nyxt/renderer/gtk::gtk-object)
+    (let* ((settings (webkit:webkit-web-view-get-settings
+                      (nyxt/renderer/gtk::gtk-object buffer))))
+      (setf
+       (webkit:webkit-settings-enable-media-stream settings) t
+       (webkit:webkit-settings-enable-spatial-navigation settings) t
+       (webkit:webkit-settings-enable-resizable-text-areas settings) t
+       (webkit:webkit-settings-enable-write-console-messages-to-stdout settings) t
+       (webkit:webkit-settings-enable-encrypted-media settings) t
+       (webkit:webkit-settings-enable-webgl settings) t
+       (webkit:webkit-settings-default-font-family settings) "SF Pro Text"
+       (webkit:webkit-settings-monospace-font-family settings) "Liga SFMono Nerd Font")))
+  (cffi:foreign-funcall
+   "webkit_web_view_set_background_color"
+   :pointer (g:pointer (nyxt/renderer/gtk:gtk-object buffer))
+   ;; GdkRgba is simply an array of four doubles.
+   :pointer (cffi:foreign-alloc
+             :double
+             :count 4
+             ;; red green blue alpha
+             :initial-contents '(0d0 0d0 0d0 1d0))))
