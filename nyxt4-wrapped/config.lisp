@@ -3,8 +3,7 @@
 ;;; MODES
 
 (defvar *buffer-modes*
-  '(vi-normal-mode
-    dark-mode)
+  '(vi-normal-mode)
  "Modes to enable in buffer by default")
 
 (define-configuration nyxt/mode/hint:hint-mode
@@ -168,47 +167,51 @@
                 (*font* "SF Pro Display")
                 (*mono* "Liga SFMono Nerd Font"))
 
-(define-configuration nyxt/mode/style:dark-mode
+(define-configuration :web-buffer
   ((style
     (theme:themed-css (theme *browser*) 
       `(body
         :background-color ,*base00-*
         :color ,*base04-*
-        :font-family ,*font*)
-        ;;:margin "4% 6%")
+        :font-family ,*font*
+        :margin "4% 6%")
+      `("details > summary"
+        :list-style "none")
       `("h1, #subtitle"
         :font-size "63px"
         :margin-bottom "-9px")
       `("h1"
-        :color ,(make-important *base06-*))
+        :color ,*base06-*)
       `("#subtitle"
-        :color ,(make-important *base0C-*))
+        :color ,*base0C-*)
       `("h2"
         :font-size "27px"
-        :margin-bottom "-2px"
-        :color ,(make-important *base0C-*))
+        :color ,*base0C-*)
       `("h3"
         :font-size "18px"
-        :margin-bottom "-2px"
-        :color ,(make-important *base0E-*))
+        :color ,*base0E-*)
       `("h4"
-        :color ,(make-important *base0F-*))
+        :color ,*base0F-*)
       `("h5"
-        :color ,(make-important *base09-*))
-      `("a"
-        :color ,*base06-*)
-      `("li, ul, pre"
+        :color ,*base09-*)
+      `("a, li, ul, pre"
         :color ,*base05-*)
       `("a code, p code, pre, dt, code"
         :font-family ,*mono*
         :background-color ,*base01-*
-        :color ,*base06-*
-        :white-space "pre-wrap")
+        :color ,*base06-*)
+      `("a:hover, a:active"
+        :color ,*base06-*)
+      `("p, #buttons"
+        :margin-left "9px") 
       `("hr, .button"
-        :background-color ,(make-important *base01-*)
-        :border-color ,(make-important *base01-*)
-        :color ,(make-important *base04-*)
-        :border-radius "0")))))
+        :background-color ,*base01-*
+        :border-color ,*base01-*
+        :color ,*base04-*
+        :border-radius "0")
+      `(".button:hover"
+        :background-color ,*base02-*
+        :color ,*base06-*)))))
 
 (define-configuration :status-buffer
   ((height 36)
@@ -262,7 +265,6 @@
         :display "grid"
         :grid-template-columns "auto auto 1fr auto auto")
       `("#prompt"
-        ;; :max-width "40ch"
         :text-overflow "ellipsis")
       `("#prompt, #prompt-input, #prompt-modes, #close-button"
 	:padding "3px"
@@ -806,92 +808,15 @@ A poor man's vsplit :("
   "Take a screenshot of a region and copy to clipboard"
   (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
 
-(define-command-global screenshot-region ()
-  "Take a screenshot of a region and copy to clipboard"
-  (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
+;;; WF-RECORDER
 
-;;; IWCTL Network Connection
+(define-command-global screen-record ()
+  "Take a recording of the current display"
+  (uiop:launch-program "wf-recorder"))
 
-;; (defun get-wifi-devices ()
-;;   "Retrieve a list of WiFi devices from iwctl"
-;;   (mapcar 
-;;    #'first 
-;;    (remove-if 
-;;     (lambda (line) 
-;;       (or (null line) 
-;;           (string= (first line) "Name")))
-;;     (mapcar 
-;;      (lambda (line) 
-;;        (str:words line))
-;;      (rest (str:lines (uiop:run-program "iwctl device list" :output :string)))))))
-;; 
-;; (defun get-available-networks (device)
-;;   "Retrieve available networks for a given WiFi device"
-;;   (mapcar 
-;;    #'second 
-;;    (remove-if 
-;;     (lambda (line) 
-;;       (or (null line) 
-;;           (string= (first line) "Network")))
-;;     (mapcar 
-;;      (lambda (line) 
-;;        (ppcre:split "\\s+" line))
-;;      (rest (str:lines 
-;;             (uiop:run-program 
-;;              (format nil "iwctl station ~A get-networks" device) 
-;;              :output :string)))))))
-;; 
-;; (defun prompt-wifi-device ()
-;;   "Prompt user to select a WiFi device"
-;;   (let ((devices (get-wifi-devices)))
-;;     (or 
-;;      (first 
-;;       (prompt 
-;;        :prompt "Select WiFi device"
-;;        :sources (list 
-;;                  (make-instance 
-;;                   'prompter:source 
-;;                   :name "WiFi Devices"
-;;                   :constructor devices))))
-;;      (error "No WiFi devices found"))))
-;; 
-;; (defun prompt-network (device)
-;;   "Prompt user to select a network for the given device"
-;;   (let ((networks (get-available-networks device)))
-;;     (or 
-;;      (first 
-;;       (prompt 
-;;        :prompt "Select Network"
-;;        :sources (list 
-;;                  (make-instance 
-;;                   'prompter:source 
-;;                   :name "Available Networks"
-;;                   :constructor networks))))
-;;      (error "No networks found"))))
-;; 
-;; (defun prompt-wifi-password ()
-;;   "Prompt user to enter WiFi password"
-;;   (first 
-;;    (prompt 
-;;     :prompt "Enter WiFi Password"
-;;     :input-prompt "Password: "
-;;     :sources (list 
-;;               (make-instance 
-;;                'prompter:raw-source)))))
-;; 
-;; (define-command-global connect-wifi ()
-;;   "Connect to a WiFi network using iwctl"
-;;   (let* (;;(wlan-device (prompt-wifi-device))
-;;          (wlan-device "wlan0")
-;;          (network-name (prompt-network wlan-device))
-;;          (password (prompt-wifi-password)))
-;;     (let ((command 
-;;             (format nil 
-;;                     "iwctl station ~A connect '~A' --password '~A'" 
-;;                     wlan-device network-name password)))
-;;       (uiop:launch-program command)
-;;       (echo "Connecting to ~A on ~A" network-name wlan-device))))
-;; 
+(define-command-global screen-record-region ()
+  "Take a recording of a region on the current display"
+  (uiop:launch-program "wf-recorder -g \"$(slurp)\""))
 
 ;; NMCLI
 
@@ -915,18 +840,23 @@ A poor man's vsplit :("
             (format nil "nmcli -f SSID,BSSID device wifi list ifname ~A" device) 
             :output :string))
          (lines (rest (str:lines wifi-list-output))))
-    (mapcar 
-     (lambda (line)
-       (let ((parts (str:words line)))
-         (or 
-          (and parts (first parts))
-          "")))
-     (remove-if 
-      (lambda (line) 
-        (or (null line) 
-            (string= line "") 
-            (string= (str:trim line) "SSID")))
-      lines))))
+    (let ((seen '()))
+      (mapcar
+       (lambda (line)
+         (let ((parts (str:words line)))
+           (let ((ssid (first parts)))
+             (unless (or (null ssid) 
+                         (string= ssid "") 
+                         (string= (str:trim ssid) "--") 
+                         (member ssid seen :test 'string=))
+               (push ssid seen)
+               ssid))))
+       (remove-if
+        (lambda (line)
+          (or (null line)
+              (string= line "")
+              (string= (str:trim line) "SSID")))
+        lines)))))
 
 (defun prompt-wifi-device ()
   "Prompt user to select a WiFi device."
@@ -975,6 +905,7 @@ A poor man's vsplit :("
       (echo "Connecting to ~A on ~A" network-name wlan-device))))
 
 ;;; BRIGHTNESSCTL 
+
 (define-command-global set-brightness ()
   "Set brightness using brightnessctl"
   (let* ((current-brightness 
@@ -1006,6 +937,7 @@ A poor man's vsplit :("
       (echo "Brightness set to ~A%" new-brightness))))
 
 ;;; PAMIXER
+
 (define-command-global set-volume ()
   "Prompt user to set volume percentage"
   (let* ((current-volume 
@@ -1078,6 +1010,7 @@ A poor man's vsplit :("
 
 ;;; ACE
 
+;; editor-mode was removed, reimplement it
 (define-mode editor-mode ()
   "General-purpose editor mode, meant to be subclassed")
 
@@ -1464,6 +1397,11 @@ BUFFER is of type `editor-buffer'."
   "Add `editor-mode' and `ace-mode' to `editor-buffer' by default."
   (list 'editor-mode 'ace-mode))
 
+;;; REPL
+
+;; this was removed in pre-release4, re-implement
+
+
 ;;; KAOMOJI
 
 ;;; MPV
@@ -1521,6 +1459,21 @@ currently active buffer."
        :history history))))
 
 ;;; TOR
+
+;; (define-mode tor-proxy-mode (nyxt/mode/proxy:proxy-mode)
+;;   "Launch tor & set proxy to local Tor SOCKS5 proxy."
+;;   ((uiop:launch-program "tor" :ignore-error-status t)
+;;    (nyxt/mode/proxy:proxy (make-instance 
+;; 			    'proxy
+;;                             :url (quri:uri "socks5://localhost:9050")
+;;                             :allowlist '("localhost")
+;;                             :proxied-downloads-p t))))
+
+(define-mode tor-proxy-mode (nyxt/mode/proxy:proxy-mode)
+  ((nyxt/mode/proxy:proxy (make-instance 'proxy
+                                         :url (quri:uri "socks5://localhost:9050")
+                                         :allowlist '("localhost" "localhost:8080")
+                                         :proxied-downloads-p t))))
 
 ;;; ZOTERO
 

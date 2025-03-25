@@ -41,8 +41,10 @@ in {
       mpv
       grim
       slurp
+      wf-recorder
       pamixer
       brightnessctl
+      tor
   
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
@@ -79,10 +81,6 @@ in {
     };
   
     # wpa_supplicant + wpa3 doesn't work on broadcom
-    # networking.wireless.iwd = {
-    #   enable = true;
-    #   settings.General.EnableNetworkConfiguration = true;
-    # };
     networking.networkmanager.enable = true;
   
     # Configure XDG for Nyxt

@@ -59,7 +59,6 @@
   };
 
   # log us in & launches enviornment of choice automatically
-  # services.getty.autologinUser = "nyxtkiosk";
   services.greetd = {
     enable = true;
     settings = {
