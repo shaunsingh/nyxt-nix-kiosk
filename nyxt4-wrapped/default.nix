@@ -31,12 +31,6 @@ in {
     };
   };
   config = {
-    # vulkan issues
-    programs.gamescope = {
-      enable = true;
-      capSysNice = true;
-    };
-  
     environment.defaultPackages = with pkgs; [
       # apps
       nyxt4
@@ -44,8 +38,11 @@ in {
 
       # tools
       wlr-randr
+      mpv
       grim
       slurp
+      pamixer
+      brightnessctl
   
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
@@ -74,6 +71,19 @@ in {
         subpixel.lcdfilter = "default";
       };
     };
+
+    # asahi has vulkan issues
+    programs.gamescope = {
+      enable = true;
+      capSysNice = true;
+    };
+  
+    # wpa_supplicant + wpa3 doesn't work on broadcom
+    # networking.wireless.iwd = {
+    #   enable = true;
+    #   settings.General.EnableNetworkConfiguration = true;
+    # };
+    networking.networkmanager.enable = true;
   
     # Configure XDG for Nyxt
     # xdg = {

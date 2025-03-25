@@ -262,7 +262,7 @@
         :display "grid"
         :grid-template-columns "auto auto 1fr auto auto")
       `("#prompt"
-        :max-width "40ch"
+        ;; :max-width "40ch"
         :text-overflow "ellipsis")
       `("#prompt, #prompt-input, #prompt-modes, #close-button"
 	:padding "3px"
@@ -365,13 +365,13 @@
          :text-align "left"))
       `("#selection"
         :background-color ,*base0B-*
-        :color ,*base00-*)
+        :color ,(make-important *base00-*))
       `(.marked
         :background-color ,*base0B-*
-        :color ,*base00-*)
+        :color ,(make-important *base00-*))
       `(.selected
         :background-color ,*base06-*
-        :color ,*base00-*)))))
+        :color ,(make-important *base00-*))))))
 
 (define-configuration (window)
  ((message-buffer-height 21)
@@ -792,7 +792,7 @@ A poor man's vsplit :("
   (delete-all-panel-buffers)
   (uiop:launch-program "pkill zola"))
 
-;;; SYSTEM
+;;; GRIM
 
 (define-command-global screenshot ()
   "Take a screenshot"
@@ -805,6 +805,227 @@ A poor man's vsplit :("
 (define-command-global screenshot-region ()
   "Take a screenshot of a region and copy to clipboard"
   (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
+
+(define-command-global screenshot-region ()
+  "Take a screenshot of a region and copy to clipboard"
+  (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
+
+;;; IWCTL Network Connection
+
+;; (defun get-wifi-devices ()
+;;   "Retrieve a list of WiFi devices from iwctl"
+;;   (mapcar 
+;;    #'first 
+;;    (remove-if 
+;;     (lambda (line) 
+;;       (or (null line) 
+;;           (string= (first line) "Name")))
+;;     (mapcar 
+;;      (lambda (line) 
+;;        (str:words line))
+;;      (rest (str:lines (uiop:run-program "iwctl device list" :output :string)))))))
+;; 
+;; (defun get-available-networks (device)
+;;   "Retrieve available networks for a given WiFi device"
+;;   (mapcar 
+;;    #'second 
+;;    (remove-if 
+;;     (lambda (line) 
+;;       (or (null line) 
+;;           (string= (first line) "Network")))
+;;     (mapcar 
+;;      (lambda (line) 
+;;        (ppcre:split "\\s+" line))
+;;      (rest (str:lines 
+;;             (uiop:run-program 
+;;              (format nil "iwctl station ~A get-networks" device) 
+;;              :output :string)))))))
+;; 
+;; (defun prompt-wifi-device ()
+;;   "Prompt user to select a WiFi device"
+;;   (let ((devices (get-wifi-devices)))
+;;     (or 
+;;      (first 
+;;       (prompt 
+;;        :prompt "Select WiFi device"
+;;        :sources (list 
+;;                  (make-instance 
+;;                   'prompter:source 
+;;                   :name "WiFi Devices"
+;;                   :constructor devices))))
+;;      (error "No WiFi devices found"))))
+;; 
+;; (defun prompt-network (device)
+;;   "Prompt user to select a network for the given device"
+;;   (let ((networks (get-available-networks device)))
+;;     (or 
+;;      (first 
+;;       (prompt 
+;;        :prompt "Select Network"
+;;        :sources (list 
+;;                  (make-instance 
+;;                   'prompter:source 
+;;                   :name "Available Networks"
+;;                   :constructor networks))))
+;;      (error "No networks found"))))
+;; 
+;; (defun prompt-wifi-password ()
+;;   "Prompt user to enter WiFi password"
+;;   (first 
+;;    (prompt 
+;;     :prompt "Enter WiFi Password"
+;;     :input-prompt "Password: "
+;;     :sources (list 
+;;               (make-instance 
+;;                'prompter:raw-source)))))
+;; 
+;; (define-command-global connect-wifi ()
+;;   "Connect to a WiFi network using iwctl"
+;;   (let* (;;(wlan-device (prompt-wifi-device))
+;;          (wlan-device "wlan0")
+;;          (network-name (prompt-network wlan-device))
+;;          (password (prompt-wifi-password)))
+;;     (let ((command 
+;;             (format nil 
+;;                     "iwctl station ~A connect '~A' --password '~A'" 
+;;                     wlan-device network-name password)))
+;;       (uiop:launch-program command)
+;;       (echo "Connecting to ~A on ~A" network-name wlan-device))))
+;; 
+
+;; NMCLI
+
+(defun get-wifi-devices ()
+  "Retrieve a list of WiFi devices using nmcli."
+  (mapcar 
+   #'first 
+   (remove-if 
+    (lambda (line) 
+      (or (null line) 
+          (string= (first line) "DEVICE")))
+    (mapcar 
+     (lambda (line) 
+       (str:words line))
+     (rest (str:lines (uiop:run-program "nmcli device status" :output :string)))))))
+
+(defun get-available-networks (device)
+  "Retrieve available networks for a given WiFi device using nmcli."
+  (let* ((wifi-list-output 
+           (uiop:run-program 
+            (format nil "nmcli -f SSID,BSSID device wifi list ifname ~A" device) 
+            :output :string))
+         (lines (rest (str:lines wifi-list-output))))
+    (mapcar 
+     (lambda (line)
+       (let ((parts (str:words line)))
+         (or 
+          (and parts (first parts))
+          "")))
+     (remove-if 
+      (lambda (line) 
+        (or (null line) 
+            (string= line "") 
+            (string= (str:trim line) "SSID")))
+      lines))))
+
+(defun prompt-wifi-device ()
+  "Prompt user to select a WiFi device."
+  (let ((devices (get-wifi-devices)))
+    (or 
+     (first 
+      (prompt 
+       :prompt "Select WiFi device"
+       :sources (make-instance 
+                 'prompter:source 
+                 :name "WiFi Devices"
+                 :constructor devices)))
+     (error "No WiFi devices found"))))
+
+(defun prompt-network (device)
+  "Prompt user to select a network for the given device."
+  (let ((networks (get-available-networks device)))
+    (or 
+     (first 
+      (prompt 
+       :prompt "Select Network"
+       :sources (make-instance 
+                 'prompter:source 
+                 :name "Available Networks"
+                 :constructor networks))))
+     (error "No networks found")))
+
+(defun prompt-wifi-password ()
+  "Prompt user to enter WiFi password."
+  (first 
+   (prompt 
+    :prompt "Enter WiFi Password: "
+    :sources (make-instance 
+              'prompter:raw-source))))
+
+(define-command-global connect-wifi ()
+  "Connect to a WiFi network using nmcli."
+  (let* ((wlan-device (prompt-wifi-device))
+         (network-name (prompt-network wlan-device))
+         (password (prompt-wifi-password)))
+    (let ((command 
+            (format nil 
+                    "nmcli device wifi connect '~A' password '~A' ifname ~A" 
+                    network-name password wlan-device)))
+      (uiop:launch-program command)
+      (echo "Connecting to ~A on ~A" network-name wlan-device))))
+
+;;; BRIGHTNESSCTL 
+(define-command-global set-brightness ()
+  "Set brightness using brightnessctl"
+  (let* ((current-brightness 
+           (parse-integer 
+            (uiop:run-program 
+             "brightnessctl g" 
+             :output :string) 
+            :junk-allowed t))
+         (max-brightness 
+           (parse-integer 
+            (uiop:run-program 
+             "brightnessctl m" 
+             :output :string) 
+            :junk-allowed t))
+         (current-percentage 
+           (floor (* 100 (/ current-brightness max-brightness))))
+         (new-brightness 
+           (first 
+            (prompt 
+             :prompt (format nil "Current Brightness: ~A%. Enter new brightness (0-100): " 
+                              current-percentage)
+             :sources (make-instance 
+                       'prompter:raw-source)))))
+    (let* ((brightness-value 
+             (floor (* max-brightness (/ (parse-integer new-brightness) 100.0))))
+           (command 
+             (format nil "brightnessctl s ~A%" brightness-value)))
+      (uiop:launch-program command)
+      (echo "Brightness set to ~A%" new-brightness))))
+
+;;; PAMIXER
+(define-command-global set-volume ()
+  "Prompt user to set volume percentage"
+  (let* ((current-volume 
+           (parse-integer 
+            (uiop:run-program 
+             "pamixer --get-volume" 
+             :output :string) 
+            :junk-allowed t))
+         (new-volume 
+           (first 
+            (prompt 
+             :prompt (format nil "Current Volume: ~A%. Enter new volume (0-100): " 
+                              current-volume)
+             :sources (make-instance 
+                       'prompter:raw-source)))))
+    (let ((command 
+            (format nil "pamixer --set-volume ~A" 
+                    (parse-integer new-volume))))
+      (uiop:launch-program command)
+      (echo "Volume set to ~A%" new-volume))))
 
 ;;; FETCH
 
@@ -1242,6 +1463,66 @@ BUFFER is of type `editor-buffer'."
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
   "Add `editor-mode' and `ace-mode' to `editor-buffer' by default."
   (list 'editor-mode 'ace-mode))
+
+;;; KAOMOJI
+
+;;; MPV
+
+(defun execute-mpv (link)
+  (uiop:launch-program (list "mpv" link) :ignore-error-status t))
+
+(define-command-global mpv-hint ()
+  "Show a set of element hints, and go to the user inputted one in the
+currently active buffer."
+  (nyxt/mode/hint:query-hints
+   "open video in mpv"
+   (lambda (hint)
+     (let ((hint (if (listp hint) (car hint) hint)))
+       (echo "~A" hint)
+       (case (type-of hint)
+         (nyxt/dom:a-element
+          (echo "MPV launched with ~a" (url hint))
+          (execute-mpv (quri:render-uri (url hint))))
+         (t
+          (echo "failed to launch mpv")
+          (print (type-of hint))
+          (print hint)))))))
+
+(define-command-global open-mpv ()
+  "executes mpv on the current buffer"
+  (execute-mpv (quri:render-uri (url (current-buffer)))))
+
+(defmethod url-sources-no-suggestions ((buffer buffer) return-actions)
+  (append
+   (list (make-instance 'global-history-source :actions-on-return return-actions)
+         (make-instance 'nyxt/mode/search-buffer:search-buffer-source :actions-on-return return-actions))
+   (alexandria:mappend (alexandria:rcurry #'url-sources return-actions) (modes buffer))))
+
+(define-command-global mpv-url (&key (prefill-current-url-p t))
+  "open an url in mpv"
+  (let ((history (set-url-history *browser*)))
+    (when history
+      (containers:insert-item history (url (current-buffer))))
+    (flet ((func (urls)
+             (let* ((url (car urls))
+                    (url-string
+                      (cond ((typep url 'history-entry) (render-url (url url)))
+                            ((stringp url)              url)
+                            ((valid-url-p url)          (render-url url))
+                            (t                          (render-url (url url))))))
+               (echo "MPV launched with ~a" url)
+               (execute-mpv url-string))))
+      (prompt
+       :prompt (format nil "Launch mpv on")
+       :input (if prefill-current-url-p
+                  (quri:render-uri (url (current-buffer))) "")
+       :sources
+       (url-sources-no-suggestions (current-buffer) (list #'func))
+       :history history))))
+
+;;; TOR
+
+;;; ZOTERO
 
 ;;; LOAD
 

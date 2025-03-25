@@ -53,6 +53,7 @@
         "video"
         "audio"
         "realtime"
+        "networkmanager"
       ];
     };
   };
