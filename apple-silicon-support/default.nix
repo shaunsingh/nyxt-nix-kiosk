@@ -12,6 +12,14 @@
   # other asahi options
   hardware.asahi.withRust = true;
   hardware.asahi.useExperimentalGPUDriver = true;
+  hardware.apple.touchBar = {
+    enable = true;
+    settings = {
+      #MediaLayerDefault = true;
+      EnablePixelShift = true;
+      AdaptiveBrightness = false;
+    };
+  };
 
   # memswap
   zramSwap = {
