@@ -296,7 +296,6 @@
               `("textarea"
                 :background-color ,*base01-*
                 :color ,*base05-*
-                ;;:width "100%"
                 :padding "9px"
                 :padding-top "6px"
                 :padding-bottom "12px")
@@ -304,10 +303,6 @@
                 :margin-left "13px")
               `("code, textarea, .cell-actions"
                 :margin "9px 9px 0px 9px"))))))
-;;              `(".input"
-;;                :background-color ,*base00-*)
-;;              `("select.button"
-;;                :background-color ,*base00-*))))))
 
 (define-configuration nyxt/mode/small-web:small-web-mode
   ((style (str:concat
@@ -616,7 +611,9 @@
 
 ;;; COMMANDS
 
-(define-panel-command-global vsplit (&key (url (quri:render-uri (url (current-buffer)))))
+#+linux
+(define-panel-command-global vsplit 
+  (&key (url (quri:render-uri (url (current-buffer)))))
     (panel "*Duplicate panel*" :right)
   "Duplicate the current buffer URL in the panel buffer on the right.
 
@@ -660,6 +657,7 @@ A poor man's vsplit :("
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 
+#+linux
 (define-panel-command-global zola-preview () 
   (panel "*zola preview*" :right) 
   "Open the Zola preview of the current markdown file on the right buffer"
@@ -685,6 +683,7 @@ A poor man's vsplit :("
    :output :interactive
    :error-output :interactive))
 
+#+linux
 (define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
   "Open a markdown file with editor and start Zola preview if possible."
   (let ((buffer (make-instance 'editor-buffer 
@@ -698,6 +697,7 @@ A poor man's vsplit :("
           (echo "Zola preview started for directory: ~a" zola-dir))
         (echo "No Zola config.toml found in parent directories"))))
 
+#+linux
 (define-command-global close-zola-preview ()
   "Close Zola preview window and stop Zola server"
   (delete-all-panel-buffers)
@@ -705,30 +705,30 @@ A poor man's vsplit :("
 
 ;;; GRIM
 
+#+linux
 (define-command-global screenshot ()
-  #+linux
   "Take a screenshot with a 2 second delay"
   (uiop:launch-program "sleep 2 && grim"))
 
+#+linux
 (define-command-global screenshot-to-clipboard ()
-  #+linux
   "Take a screenshot with a 2 second delay & copy to clipboard"
   (uiop:launch-program "sleep 2 && grim - | wl-copy"))
 
+#+linux
 (define-command-global screenshot-region ()
-  #+linux
   "Take a screenshot of a region and copy to clipboard"
   (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
 
 ;;; WF-RECORDER
 
+#+linux
 (define-command-global screen-record ()
-  #+linux
   "Take a recording of the current display"
   (uiop:launch-program "wf-recorder"))
 
+#+linux
 (define-command-global screen-record-region ()
-  #+linux
   "Take a recording of a region on the current display"
   (uiop:launch-program "wf-recorder -g \"$(slurp)\""))
 
@@ -811,8 +811,8 @@ A poor man's vsplit :("
     :sources (make-instance 
               'prompter:raw-source))))
 
+#+linux
 (define-command-global connect-wifi ()
-  #+linux
   "Connect to a WiFi network using nmcli."
   (let* ((wlan-device (prompt-wifi-device))
          (network-name (prompt-network wlan-device))
@@ -826,8 +826,8 @@ A poor man's vsplit :("
 
 ;;; BRIGHTNESSCTL 
 
+#+linux
 (define-command-global set-brightness ()
-  #+linux
   "Set brightness using brightnessctl"
   (let* ((current-brightness 
            (parse-integer 
@@ -859,8 +859,8 @@ A poor man's vsplit :("
 
 ;;; PAMIXER
 
+#+linux
 (define-command-global set-volume ()
-  #+linux
   "Prompt user to set volume percentage"
   (let* ((current-volume 
            (parse-integer 
@@ -895,8 +895,8 @@ A poor man's vsplit :("
 (defun mem-used ()
    (- (mem-total) (+ (mem-cached) (mem-free))))
 
+#+linux
 (define-internal-page-command-global fetch ()
-  #+linux
     (buffer "*fetch*")
   "my custom fetch"
   (let ((dashboard-style (theme:themed-css (theme *browser*)
@@ -2131,7 +2131,7 @@ advanced search filters for more precise searches.")
                          (lobsters)
                          (nixpkgs)
                          (openstreetmaps)
-			 ;; default
+			                   ;; default
                          (google :shortcut "g"
                                  :safe-search nil)))))
 

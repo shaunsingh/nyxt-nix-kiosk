@@ -83,9 +83,7 @@ in {
  
       # dev dependencies 
       zola 
-    ] ++ (with pkgs.python3Packages; [
-      grip
-    ]);
+    ];
   
     fonts = {
       packages = with pkgs; [
@@ -109,15 +107,5 @@ in {
   
     # wpa_supplicant + wpa3 doesn't work on broadcom
     networking.networkmanager.enable = true;
-  
-    # Configure XDG for Nyxt
-    # xdg = {
-    #   enable = true;
-    #   configFile."nyxt" = {
-    #     source = ./config;
-    #     recursive = true;
-    #     target = ".config/nyxt";
-    #   };
-    # };
   };
 }
