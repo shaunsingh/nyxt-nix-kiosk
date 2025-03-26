@@ -8,7 +8,6 @@
 
 (define-configuration nyxt/mode/hint:hint-mode
   ((nyxt/mode/hint:hints-alphabet "DSJKHLFAGNMXCWEIO")
-   ;; same as default except it doesn't hint images
    (nyxt/mode/hint:hints-selector "a, button, input, textarea, details, select")))
 
 (define-configuration nyxt/mode/reduce-tracking:reduce-tracking-mode
@@ -707,30 +706,36 @@ A poor man's vsplit :("
 ;;; GRIM
 
 (define-command-global screenshot ()
+  #+linux
   "Take a screenshot with a 2 second delay"
   (uiop:launch-program "sleep 2 && grim"))
 
 (define-command-global screenshot-to-clipboard ()
+  #+linux
   "Take a screenshot with a 2 second delay & copy to clipboard"
   (uiop:launch-program "sleep 2 && grim - | wl-copy"))
 
 (define-command-global screenshot-region ()
+  #+linux
   "Take a screenshot of a region and copy to clipboard"
   (uiop:launch-program "grim -g \"$(slurp)\" - -t png | wl-copy -t image/png"))
 
 ;;; WF-RECORDER
 
 (define-command-global screen-record ()
+  #+linux
   "Take a recording of the current display"
   (uiop:launch-program "wf-recorder"))
 
 (define-command-global screen-record-region ()
+  #+linux
   "Take a recording of a region on the current display"
   (uiop:launch-program "wf-recorder -g \"$(slurp)\""))
 
 ;; NMCLI
 
 (defun get-wifi-devices ()
+  #+linux
   "Retrieve a list of WiFi devices using nmcli."
   (mapcar 
    #'first 
@@ -744,6 +749,7 @@ A poor man's vsplit :("
      (rest (str:lines (uiop:run-program "nmcli device status" :output :string)))))))
 
 (defun get-available-networks (device)
+  #+linux
   "Retrieve available networks for a given WiFi device using nmcli."
   (let* ((wifi-list-output 
            (uiop:run-program 
@@ -769,6 +775,7 @@ A poor man's vsplit :("
         lines)))))
 
 (defun prompt-wifi-device ()
+  #+linux
   "Prompt user to select a WiFi device."
   (let ((devices (get-wifi-devices)))
     (or 
@@ -782,6 +789,7 @@ A poor man's vsplit :("
      (error "No WiFi devices found"))))
 
 (defun prompt-network (device)
+  #+linux
   "Prompt user to select a network for the given device."
   (let ((networks (get-available-networks device)))
     (or 
@@ -795,6 +803,7 @@ A poor man's vsplit :("
      (error "No networks found")))
 
 (defun prompt-wifi-password ()
+  #+linux
   "Prompt user to enter WiFi password."
   (first 
    (prompt 
@@ -803,6 +812,7 @@ A poor man's vsplit :("
               'prompter:raw-source))))
 
 (define-command-global connect-wifi ()
+  #+linux
   "Connect to a WiFi network using nmcli."
   (let* ((wlan-device (prompt-wifi-device))
          (network-name (prompt-network wlan-device))
@@ -817,6 +827,7 @@ A poor man's vsplit :("
 ;;; BRIGHTNESSCTL 
 
 (define-command-global set-brightness ()
+  #+linux
   "Set brightness using brightnessctl"
   (let* ((current-brightness 
            (parse-integer 
@@ -849,6 +860,7 @@ A poor man's vsplit :("
 ;;; PAMIXER
 
 (define-command-global set-volume ()
+  #+linux
   "Prompt user to set volume percentage"
   (let* ((current-volume 
            (parse-integer 
@@ -884,6 +896,7 @@ A poor man's vsplit :("
    (- (mem-total) (+ (mem-cached) (mem-free))))
 
 (define-internal-page-command-global fetch ()
+  #+linux
     (buffer "*fetch*")
   "my custom fetch"
   (let ((dashboard-style (theme:themed-css (theme *browser*)
@@ -972,11 +985,6 @@ See `describe-class editor-mode' for details."))
           (sleep 2)
           (set-content mode (uiop:read-file-string file)))
         (markup mode))))
-
-;; (define-internal-scheme "editor"
-;;     (lambda (url)
-;;       (markup (find-submode 'editor-mode)
-;;               (uiop:read-file-string (quri:uri-path (quri:uri url))))))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (let ((mode (find-submode 'editor-mode editor-buffer)))
@@ -2305,28 +2313,3 @@ advanced search filters for more precise searches.")
   ((default-modes `(vi-insert-mode
          ,@%slot-value%))
    (hide-single-source-header-p t)))
-
-;;; WEBKIT
-
-;; this was mostly guessing, thouogh this link provides basic docs for the options
-;; https://webkitgtk.org/reference/webkit2gtk/stable/class.Settings.html#properties
-
-;;(defmethod ffi-ffer-make :after ((buffer buffer))
-;;  (when (slot-boundp buffer 'nyxt/renderer/gtk::gtk-object)
-;;    (let* ((settings (webkit:webkit-web-view-get-settings
-;;                      (nyxt/renderer/gtk::gtk-object buffer))))
-;;      (setf
-;;       (webkit:webkit-settings-enable-media-stream settings) t
-;;       (webkit:webkit-settings-enable-back-forward-navigation-gestures) t
-;;       (webkit:webkit-settings-enable-webgl settings) t
-;;       (webkit:webkit-settings-default-font-family settings) "SF Pro Text"
-;;       (webkit:webkit-settings-monospace-font-family settings) "Liga SFMono Nerd Font")))
-;;  (cffi:foreign-funcall
-;;   "webkit_web_view_set_background_color"
-;;   :pointer (g:pointer (nyxt/renderer/gtk:gtk-object buffer))
-;;   ;; GdkRgba is simply an array of four doubles.
-;;   :pointer (cffi:foreign-alloc
-;;             :double
-;;             :count 4
-;;             ;; red green blue alpha
-;;             :initial-contents '(0d0 0d0 0d0 1d0))))
