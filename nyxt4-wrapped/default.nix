@@ -74,7 +74,9 @@ in {
       wf-recorder
       pamixer
       brightnessctl
+      bluez-experimental
       tor
+      gtk3
   
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
@@ -86,7 +88,7 @@ in {
  
       # dev dependencies 
       zola 
-    ];
+    ];  
   
     fonts = {
       packages = with pkgs; [

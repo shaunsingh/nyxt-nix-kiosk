@@ -641,6 +641,51 @@ A poor man's vsplit :("
 ;;  'search-translate-selection
 ;;  "Translate Selection")
 
+;; LAUNCHER
+
+(defun string-remove-suffix (suffix string)
+  "Remove SUFFIX from STRING if it is present."
+  (if (and suffix 
+           string 
+           (>= (length string) (length suffix))
+           (string= suffix (subseq string (- (length string) (length suffix)))))
+      (subseq string 0 (- (length string) (length suffix)))
+      string))
+
+;; these are symlinks so might have issues?
+(defun get-installed-applications ()
+  #+linux
+  "Retrieve a list of installed applications from NixOS applications directory."
+  (remove-duplicates
+   (remove nil
+    (mapcar (lambda (file)
+              (let ((filename (file-namestring file)))
+                (when (and (str:ends-with? ".desktop" filename)
+                           (not (str:starts-with? "." filename))
+                           (not (string= filename "mimeinfo.cache")))
+                  (string-remove-suffix ".desktop" filename))))
+            (directory "/run/current-system/sw/share/applications/*.desktop"))
+   :test #'string=)))
+
+(defun prompt-application ()
+  #+linux
+  "Prompt user to select an application to launch."
+  (let ((apps (get-installed-applications)))
+    (first 
+     (prompt 
+      :prompt "Select Application to Launch"
+      :sources (make-instance 
+                'prompter:source 
+                :name "Installed Applications"
+                :constructor apps)))))
+
+#+linux
+(define-command-global launch-application ()
+  "Launch a selected application."
+  (let ((app (prompt-application)))
+    (uiop:launch-program (format nil "gtk-launch ~A" app))
+    (echo "Launching application: ~A" app)))
+
 ;;; MARKDOWN
 
 (defun my-prompt-for-file ()
@@ -856,6 +901,38 @@ A poor man's vsplit :("
                     network-name password wlan-device)))
       (uiop:launch-program command)
       (echo "Connecting to ~A on ~A" network-name wlan-device))))
+
+;; BLUETOOTHCTL
+
+(defun get-bluetooth-devices ()
+  #+linux
+  "Retrieve a list of available Bluetooth devices using bluetoothctl."
+  (remove-if #'null
+             (mapcar (lambda (line)
+                       (when (search "Device" line)
+                         (nth 1 (str:words line))))
+                     (str:lines (uiop:run-program "bluetoothctl devices" :output :string)))))
+
+(defun prompt-bluetooth-device ()
+  #+linux
+  "Prompt user to select a Bluetooth device."
+  (let ((devices (get-bluetooth-devices)))
+    (or 
+     (first 
+      (prompt 
+       :prompt "Select Bluetooth device"
+       :sources (make-instance 
+                 'prompter:source 
+                 :name "Bluetooth Devices"
+                 :constructor devices)))
+     (error "No Bluetooth devices found"))))
+
+#+linux
+(define-command-global connect-bluetooth ()
+  "Connect to a Bluetooth device using bluetoothctl."
+  (let ((device (prompt-bluetooth-device)))
+    (uiop:launch-program (format nil "bluetoothctl connect ~A" device))
+    (echo "Connecting to Bluetooth device: ~A" device)))
 
 ;;; BRIGHTNESSCTL 
 
