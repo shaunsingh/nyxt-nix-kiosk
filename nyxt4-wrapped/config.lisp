@@ -657,15 +657,20 @@ A poor man's vsplit :("
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 
-#+linux
-(define-panel-command-global zola-preview () 
-  (panel "*zola preview*" :right) 
-  "Open the Zola preview of the current markdown file on the right buffer"
-  (run-thread "zola preview loader" 
-    (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
-    (sleep 0.3)
-    (buffer-load (quri:uri "http://localhost:1111") :buffer panel))
-  "")
+(defun my-prompt-for-directory ()
+  "Prompt the user to select a directory."
+  (uiop:native-namestring
+   (pathname
+    (prompt1 
+     :prompt "Select Directory"
+     :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+     :input (uiop:native-namestring (uiop:getcwd))
+     :sources 
+     (list 
+      (make-instance 'nyxt/mode/file-manager:file-source
+                     :name "Directories"
+                     :allow-directories t
+                     :path-filter #'uiop:directory-pathname-p))))))
 
 (defun find-zola-config-directory (file-path)
   "Find the nearest parent directory containing config.toml."
@@ -683,8 +688,32 @@ A poor man's vsplit :("
    :output :interactive
    :error-output :interactive))
 
+(defun kill-zola ()
+  "Kill the zola pricess"
+  (uiop:launch-program "pkill zola"
+   :output :interactive
+   :error-output :interactive))
+
+(define-command-global zola-preview (&key (directory nil))
+  "Preview Zola project in a new buffer"
+  (let* ((selected-directory (or directory (my-prompt-for-directory)))
+         (zola-uri (quri:uri "http://localhost:1111")))
+      (run-zola-serve selected-directory)
+      (make-buffer-focus :url zola-uri)))
+
 #+linux
-(define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
+(define-panel-command-global zola-preview-split (&key (directory nil))
+  (panel "*zola preview*" :right) 
+  "Preview Zola project in a split buffer"
+  (let* ((selected-directory (or directory (my-prompt-for-directory)))
+         (zola-uri (quri:uri "http://localhost:1111")))
+    (run-zola-serve selected-directory)
+    (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+    (buffer-load zola-uri :buffer panel))
+  "")
+
+#+linux
+(define-command-global zola-edit-and-preview (&key (file (my-prompt-for-file)))
   "Open a markdown file with editor and start Zola preview if possible."
   (let ((buffer (make-instance 'editor-buffer 
                                :url (quri:make-uri :scheme "editor" :path file)))
@@ -697,11 +726,15 @@ A poor man's vsplit :("
           (echo "Zola preview started for directory: ~a" zola-dir))
         (echo "No Zola config.toml found in parent directories"))))
 
+(define-command-global zola-kill ()
+  "Stop Zola server"
+  (kill-zola))
+
 #+linux
-(define-command-global close-zola-preview ()
+(define-command-global close-zola-preview-split ()
   "Close Zola preview window and stop Zola server"
   (delete-all-panel-buffers)
-  (uiop:launch-program "pkill zola"))
+  (kill-zola))
 
 ;;; GRIM
 

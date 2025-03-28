@@ -24,6 +24,8 @@ Finally, use `passwd` to set a password for the `nyxtkiosk` user, reboot if need
 
 ## Configuration
 
+By default, my personal config (found under `nyxt4-unwrapped/config.lisp` and provided with no warranty) is loaded using home-manager, disable this in `nyxt4-unwrapped/default.nix` and supply your own config if you'd like
+
 By default, a copy of my `sway` configuration is imported, as NYXT does not completely fulfill my needs quite yet. It also ships with `greetd` as the standard display maanger, which will automatically log-in and launch NYXT under cage on first boot, then when exit will launch sway. Uncomment `./sway` from the imports in `configuration.nix` and remove it from the `greetd` configuration if you'd like to use just the kiosk mode.
 
 You may also adjust the configuration to do one of the following:
@@ -45,6 +47,6 @@ nyxt4-wrapped = {
 
 You may check the former two for your own machine by running `wlr-randr` under `sway` or any wayland compositor. Scale is subjective, adjust as you see fit, generally for a hidpi machine you want 2, stick with 1 for any lower resolution displays.
 
-Otherwise, just modify NYXT's config at `~/.config/nyxt/lisp` as you'd like. A copy of my personal NYXT config is provided with no warranty at `nyxt4-unwrapped/config.lisp` 
+---
 
 This file was written with `ace-mode` in NYXT

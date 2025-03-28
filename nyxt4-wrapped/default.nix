@@ -58,6 +58,9 @@ in {
     };
   };
   config = {
+    # optional personal config
+    home-manager.users.nyxtkiosk = import ./home.nix;
+
     environment.defaultPackages = with pkgs; [
       # apps
       nyxt4

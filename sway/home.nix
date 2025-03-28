@@ -30,6 +30,7 @@ in {
         wf-recorder
         wl-clipboard
         wlogout
+        doublecmd
         ;
     };
 
@@ -80,6 +81,7 @@ in {
         };
         "type:touchpad" = {
           tap = "enabled";
+          natural_scroll = "enabled";
           accel_profile = "adaptive";
           scroll_factor = "0.45";
           pointer_accel = "0.27";
