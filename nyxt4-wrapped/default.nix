@@ -6,12 +6,12 @@ let
   sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix { };
 
   # enable DRM support
-  webkitgtk-eme = pkgs.webkitgtk.overrideAttrs (oldAttrs: rec {
-    buildInputs =
-      oldAttrs.buildInputs
-      ++ [
-        pkgs.libgpg-error
-      ];
+  webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
+#     buildInputs =
+#       oldAttrs.buildInputs
+#       ++ [
+#         pkgs.libgpg-error
+#       ];
     cmakeFlags =
       oldAttrs.cmakeFlags
       ++ [

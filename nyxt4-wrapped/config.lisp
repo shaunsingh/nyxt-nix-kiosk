@@ -279,31 +279,6 @@
       :padding-left "9px"
       :margin "3px")))))
 
-(define-configuration nyxt/mode/repl:repl-mode
-  ((style (str:concat
-            %slot-value%
-            (theme:themed-css (theme *browser*)
-              `(".input-area"
-                :background-color ,*base02-*)
-              `("#cells"
-                :overflow "clip")
-              `("code"
-                :font-family ,*font*
-                :font-size "18px"
-                :background "transparent"
-                :color ,*base05-*
-                :margin "9px")
-              `("textarea"
-                :background-color ,*base01-*
-                :color ,*base05-*
-                :padding "9px"
-                :padding-top "6px"
-                :padding-bottom "12px")
-              `(".cell-actions"
-                :margin-left "13px")
-              `("code, textarea, .cell-actions"
-                :margin "9px 9px 0px 9px"))))))
-
 (define-configuration nyxt/mode/small-web:small-web-mode
   ((style (str:concat
             %slot-value%
@@ -739,26 +714,24 @@ A poor man's vsplit :("
    :output :interactive
    :error-output :interactive))
 
-(define-command-global zola-preview (&key (directory nil))
+(define-command-global zola-preview ()
   "Preview Zola project in a new buffer"
-  (let* ((selected-directory (or directory (my-prompt-for-directory)))
+  (let* ((selected-directory (my-prompt-for-directory))
          (zola-uri (quri:uri "http://localhost:1111")))
       (run-zola-serve selected-directory)
       (make-buffer-focus :url zola-uri)))
 
 #+linux
-(define-panel-command-global zola-preview-split (&key (directory nil))
+(define-panel-command zola-preview-split () 
   (panel "*zola preview*" :right) 
-  "Preview Zola project in a split buffer"
-  (let* ((selected-directory (or directory (my-prompt-for-directory)))
-         (zola-uri (quri:uri "http://localhost:1111")))
-    (run-zola-serve selected-directory)
+  "Open the Zola preview of the current markdown file on the right buffer"
+  (run-thread "zola preview loader" 
     (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
-    (buffer-load zola-uri :buffer panel))
+    (buffer-load (quri:uri "http://localhost:1111") :buffer panel))
   "")
 
 #+linux
-(define-command-global zola-edit-and-preview (&key (file (my-prompt-for-file)))
+(define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
   "Open a markdown file with editor and start Zola preview if possible."
   (let ((buffer (make-instance 'editor-buffer 
                                :url (quri:make-uri :scheme "editor" :path file)))
@@ -767,7 +740,7 @@ A poor man's vsplit :("
     (if zola-dir
         (progn
           (run-zola-serve zola-dir)
-          (zola-preview)
+          (zola-preview-split)
           (echo "Zola preview started for directory: ~a" zola-dir))
         (echo "No Zola config.toml found in parent directories"))))
 
@@ -1044,24 +1017,24 @@ A poor man's vsplit :("
 ;;; ACE
 
 ;; editor-mode was removed, reimplement it
-(define-mode editor-mode ()
+(define-mode my-editor-mode ()
   "General-purpose editor mode, meant to be subclassed")
 
 (defgeneric get-content (editor-submode)
-  (:method ((editor editor-mode))
+  (:method ((editor my-editor-mode))
     (declare (ignore editor))
     (echo-warning "Editor buffer cannot edit files without configured editor mode."))
   (:documentation "Get the content of the EDITOR-SUBMODE as a string."))
 
 (defgeneric set-content (editor-submode content)
-  (:method ((editor editor-mode) (content t))
+  (:method ((editor my-editor-mode) (content t))
     (declare (ignore editor))
     (echo-warning "Editor buffer cannot edit files without configured editor mode.
-See `describe-class editor-mode' for details."))
+See `describe-class my-editor-mode' for details."))
   (:documentation "Set the content of EDITOR-SUBMODE to the string CONTENT."))
 
 (defgeneric markup (editor-submode)
-  (:method ((editor editor-mode))
+  (:method ((editor my-editor-mode))
     (spinneret:with-html-string
       (:head
        (:nstyle (style (buffer editor))))
@@ -1088,7 +1061,7 @@ See `describe-class editor-mode' for details."))
 
 (define-internal-scheme "editor"
     (lambda (url buffer)
-      (let ((mode (find-submode 'editor-mode buffer))
+      (let ((mode (find-submode 'my-editor-mode buffer))
             (file (quri:uri-path (quri:uri url))))
         (uiop:chdir (uiop:pathname-directory-pathname file))
         (run-thread "editor content setting"
@@ -1097,8 +1070,8 @@ See `describe-class editor-mode' for details."))
         (markup mode))))
 
 (defmethod editor ((editor-buffer editor-buffer))
-  (let ((mode (find-submode 'editor-mode editor-buffer)))
-    (unless (eq 'editor-mode (serapeum:class-name-of mode))
+  (let ((mode (find-submode 'my-editor-mode editor-buffer)))
+    (unless (eq 'my-editor-mode (serapeum:class-name-of mode))
       mode)))
 
 (defmethod write-file-with-editor ((buffer editor-buffer) &key (if-exists :error))
@@ -1115,7 +1088,7 @@ See `describe-class editor-mode' for details."))
      (echo-warning "Editor buffer cannot write file without configured editor mode.")
      nil)))
 
-(defun prompt-for-editor-file ()
+(defun prompt-for-file ()
   (uiop:native-namestring
    (pathname
     (prompt1
@@ -1129,14 +1102,14 @@ See `describe-class editor-mode' for details."))
            (make-instance 'prompter:raw-source
                           :name "Create new file"))))))
 
-(define-command editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-editor-file)))
-  "Open a file.
+(define-command my-editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-file)))
+  "Open my file.
 
 BUFFER is of type `editor-buffer'."
   (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
 
-(define-command editor-write-file (&key (buffer (current-buffer)))
-  "Write a file to storage.
+(define-command my-editor-write-file (&key (buffer (current-buffer)))
+  "Write my file to storage.
 
 BUFFER is of type `editor-buffer'."
   (if (uiop:file-exists-p (file buffer))
@@ -1146,8 +1119,8 @@ BUFFER is of type `editor-buffer'."
                 (file buffer) (write-file-with-editor buffer :if-exists :overwrite)))
       (echo "File ~s ~:[not ~;~]saved." (file buffer) (write-file-with-editor buffer))))
 
-(define-command-global edit-file (&optional (file (prompt-for-editor-file)))
-  "Open a new editor and query a FILE to edit in it."
+(define-command-global edit-file (&optional (file (prompt-for-file)))
+  "Open a new editor and query my FILE to edit in it."
   (set-current-buffer (make-instance 'editor-buffer
                                      :url (quri:make-uri :scheme "editor" :path file))))
 
@@ -1162,9 +1135,9 @@ BUFFER is of type `editor-buffer'."
                                      :url (quri:make-uri :scheme "editor" :path file))))
 
 (define-auto-rule '(match-scheme "editor")
-  :included '(editor-mode))
+  :included '(my-editor-mode))
 
-(define-mode ace-mode (editor-mode nyxt/mode/passthrough:passthrough-mode)
+(define-mode ace-mode (my-editor-mode);; nyxt/mode/passthrough:passthrough-mode)
   "Mode for usage with the Ace editor."
   ((style
     (theme:themed-css (theme *browser*)
@@ -1228,13 +1201,38 @@ BUFFER is of type `editor-buffer'."
 
 (define-configuration ace-mode
   ((keyscheme-map
-     (define-keyscheme-map "editor-mode" ()
-        nyxt/keyscheme:cua
+     (define-keyscheme-map "my-editor-mode" ()
+        nyxt/keyscheme:vi-normal
         (list
-         "C-o" 'editor-open-file
-         "C-s" 'editor-write-file
+         "C-o" 'my-editor-open-file
+         "C-s" 'my-editor-write-file
          "C-w" 'delete-current-buffer
          "C-tab" 'switch-buffer)))
+  ((keyscheme-map
+    (define-keyscheme-map "editor-mode" ()
+      keyscheme:default
+      (list
+       "C-r" 'reload-current-buffer
+       "f11" 'toggle-fullscreen)
+      keyscheme:cua
+      (list
+       "C-o" 'editor-open-file
+       "C-s" 'editor-write-file
+       "C-w" 'delete-current-buffer
+       "C-tab" 'switch-buffer)
+      keyscheme:emacs
+      (list
+       "C-x C-f" 'editor-open-file
+       "C-x C-s" 'editor-write-file
+       "C-x C-k" 'delete-current-buffer
+       "C-x b" 'switch-buffer)
+      keyscheme:vi-normal
+      (list
+       "C-o" 'editor-open-file
+       "C-s" 'editor-write-file
+       "C-w" 'delete-current-buffer
+       "C-tab" 'switch-buffer))))
+   (:toggler-command-p nil)
    (style (str:concat
            %slot-value%
            (theme:themed-css (theme *browser*)
@@ -1403,9 +1401,8 @@ BUFFER is of type `editor-buffer'."
            ;; vim bindings
            (vi-noremap "j" "gj" "normal")
            (vi-noremap "k" "gk" "normal")
+           (vi-noremap "jk" "esc" "insert")
            ;; vim ex commands (ace)
-           ;; (vi-define-ex "write" "w" (lambda (cm input)
-           ;;                              (ps:chain cm ace (exec-command "save"))))
            (vi-define-ex "help" "h" (lambda ()
                                         (ps:chain editor (show-keyboard-shortcuts))))
            (vi-define-ex "settings" "se" (lambda ()
@@ -1422,12 +1419,39 @@ BUFFER is of type `editor-buffer'."
            (req "ace/worker/base")))))))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
-  "Add `editor-mode' and `ace-mode' to `editor-buffer' by default."
-  (list 'editor-mode 'ace-mode))
+  "Add `my-editor-mode' and `ace-mode' to `editor-buffer' by default."
+  (list 'my-editor-mode 'ace-mode))
 
 ;;; REPL
 
 ;; this was removed in pre-release4, re-implement
+
+(define-configuration nyxt/mode/repl:repl-mode
+  ((style (str:concat
+            %slot-value%
+            (theme:themed-css (theme *browser*)
+              `(".input-area"
+                :background-color ,*base02-*)
+              `("#cells"
+                :overflow "clip")
+              `("code"
+                :font-family ,*font*
+                :font-size "18px"
+                :background "transparent"
+                :color ,*base05-*
+                :margin "9px")
+              `("textarea"
+                :background-color ,*base01-*
+                :color ,*base05-*
+                :padding "9px"
+                :padding-top "6px"
+                :padding-bottom "12px")
+              `(".cell-actions"
+                :margin-left "13px")
+              `("code, textarea, .cell-actions"
+                :margin "9px 9px 0px 9px"))))))
+
+
 
 
 ;;; KAOMOJI
