@@ -68,7 +68,7 @@
         :margin-bottom "-9px")
       `("h2"
         :font-size "27px"
-	:margin "0"
+	    :margin "0"
         :margin-bottom "-9px"
         :color ,*base0C-*)
       `("h3"
@@ -124,7 +124,7 @@
         :display "flex"
         :white-space "nowrap"
         :overflow "hidden")
-      `("#vi-mode, #buffers, #load, #percentage, #url, #minions, #tab, #modes"
+      `("#vi-mode, #buffers, #load, #percentage, #url, #tab, #modes"
         :padding-left "9px")
       `("#modes"
         :color "#a2a9b0")
@@ -602,21 +602,21 @@ A poor man's vsplit :("
     (buffer-load (quri:uri url) :buffer panel))
   "")
 
-;; (define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
-;;     (panel "*Translate panel*" :right)
-;;   "Open the translation of the selected word in a panel buffer."
-;;   (run-thread "search translation URL loader"
-;;     (setf
-;;       (ffi-width panel) (round (/ (ffi-width (current-window)) 3)))
-;;     (sleep 0.3)
-;;     (buffer-load (quri:uri (format nil (nyxt::search-url (nyxt::default-search-engine))
-;;                                    (str:concat "translate " (ffi-buffer-copy (current-buffer)) "to english")))
-;;                  :buffer panel))
-;;   "")
-;; 
-;; (ffi-add-context-menu-command
-;;  'search-translate-selection
-;;  "Translate Selection")
+(define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+    (panel "*Translate panel*" :right)
+  "Open the translation of the selected word in a panel buffer."
+  (run-thread "search translation URL loader"
+    (setf
+      (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+      (sleep 0.3)
+      (buffer-load (quri:uri (format nil (nyxt::search-url (nyxt::default-search-engine))
+                                     (str:concat "translate " (ffi-buffer-copy (current-buffer)) "to english")))
+                    :buffer panel))
+   "")
+ 
+(ffi-add-context-menu-command
+  'search-translate-selection
+  "Translate Selection")
 
 ;; LAUNCHER
 
@@ -1225,7 +1225,8 @@ BUFFER is of type `my-editor-buffer'."
        "C-o" 'my-editor-open-file
        "C-s" 'my-editor-write-file
        "C-w" 'delete-current-buffer
-       "C-tab" 'switch-buffer)))
+       "C-tab" 'switch-buffer
+       "C-space" 'execute-command)))
    (:toggler-command-p nil)
    (style (str:concat
            %slot-value%
@@ -1244,7 +1245,7 @@ BUFFER is of type `my-editor-buffer'."
               `(".oxocarbon .ace_marker-layer .ace_selection"
                :background-color ,*base02-*)
               `(".oxocarbon .ace_marker-layer .ace_step"
-               :background-color ,*base0a-*)
+               :background-color ,*base0A-*)
               `(".oxocarbon .ace_marker-layer .ace_active-line"
                :background-color ,*base01-*)
               `(".oxocarbon .ace_gutter-active-line"
@@ -1274,9 +1275,9 @@ BUFFER is of type `my-editor-buffer'."
               `(".oxocarbon .ace_comment"
                :color ,*base03-*)
               `(".oxocarbon .ace_keyword"
-               :color ,*base0c-*)
+               :color ,*base0C-*)
               `(".oxocarbon .ace_constant.ace_numeric"
-               :color ,*base0f-*)
+               :color ,*base0F-*)
               `(".oxocarbon .ace_constant.ace_character"
                :color ,*base07-*)
               `(".oxocarbon .ace_constant.ace_character.ace_escape"
@@ -1287,7 +1288,7 @@ BUFFER is of type `my-editor-buffer'."
                :color ,*base09-*)
               `(".oxocarbon .ace_support.ace_function"
                :font-weight "bold"
-               :color ,*base0c-*)
+               :color ,*base0C-*)
               `(".oxocarbon .ace_support.ace_constant"
                :color ,*base07-*)
               `(".oxocarbon .ace_support.ace_class"
@@ -1299,19 +1300,19 @@ BUFFER is of type `my-editor-buffer'."
               `(".oxocarbon .ace_storage.ace_type"
                :color ,*base08-*)
               `(".oxocarbon .ace_invalid"
-               :color ,*base0a-*)
+               :color ,*base0A-*)
               `(".oxocarbon .ace_invalid.ace_deprecated"
                :color ,*base03-*)
               `(".oxocarbon .ace_string"
-               :color ,*base0e-*)
+               :color ,*base0E-*)
               `(".oxocarbon .ace_variable"
-               :color ,*base0f-*)
+               :color ,*base0F-*)
               `(".oxocarbon .ace_variable.ace_parameter"
                :color ,*base04-*)
               `(".oxocarbon .ace_entity.ace_other.ace_attribute-name"
-               :color ,*base0b-*)
+               :color ,*base0B-*)
               `(".oxocarbon .ace_entity.ace_name.ace_tag"
-               :color ,*base0f-*)
+               :color ,*base0F-*)
               `(".oxocarbon .ace_invisible"
                :color ,*base03-*))))
    (:keybindings "ace/keyboard/vim")
@@ -1333,6 +1334,7 @@ BUFFER is of type `my-editor-buffer'."
          "mode-sh.min.js"
          "mode-lua.min.js"
          "mode-python.min.js"
+         "mode-ocaml.min.js"
          ;; language snippets
          "snippets/java.min.js"
          "snippets/nix.min.js"
@@ -1347,8 +1349,6 @@ BUFFER is of type `my-editor-buffer'."
          "worker-base.min.js"
          ;; extensions
          "ext-language_tools.min.js"   ;; basic autocompletion/snippets
-         "ext-split.min.js"            ;; enable split functionality
-         "ext-searchbox.min.js"        ;; used for cmd/ctrl-f dialogue
          "ext-whitespace.min.js"       ;; detect spacing/indent
          "ext-settings_menu.min.js"    ;; view and adjust settings
          "ext-keybinding_menu.min.js"  ;; view and adjust keybindings
@@ -1370,9 +1370,7 @@ BUFFER is of type `my-editor-buffer'."
            (ps:chain editor (set-theme (parenscript:create css-class "oxocarbon" is-dark t)))
            ;; load extensions
            (req "ace/ext/language_tools")
-           (req "ace/ext/searchbox")
            (req "ace/ext/whitespace")
-           (req "ace/ext/split")
            (ps:chain (req "ace/ext/settings_menu") (init editor))
            (ps:chain (req "ace/ext/keybinding_menu") (init editor))
            (ps:chain editor session
@@ -1384,18 +1382,18 @@ BUFFER is of type `my-editor-buffer'."
            (ps:chain editor (set-option "fontSize" 15))                 ;; bigger default font
            (ps:chain editor (set-option "showLineNumbers" nil))         ;; disable line numbers
            (ps:chain editor (set-option "showPrintMargin" t))           ;; enable print margin (colorline)
+           (ps:chain editor (set-option "wrap" "free"))                 ;; wrap to end of screen 
            (ps:chain editor (set-option "displayIndentGuides" nil))     ;; disable indent markers
            (ps:chain editor (set-option "hScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (h)
            (ps:chain editor (set-option "vScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (v)
            (ps:chain editor (set-option "useSoftTabs" t))               ;; use spaces instead of tabs
            (ps:chain editor (set-option "enableSnippets" t))            ;; enable snippet support
            (ps:chain editor (set-option "enableBasicAutocompletion" t)) ;; enable autocomplete support (basic)
-           (ps:chain editor (set-option "enableLiveAutocompletion" t)) ;; enable autocomplete support (live)
+           (ps:chain editor (set-option "enableLiveAutocompletion" t))  ;; enable autocomplete support (live)
            (ps:chain editor (set-option "highlightActiveLine" t))       ;; highlight current line
            ;; vim bindings
            (vi-noremap "j" "gj" "normal")
            (vi-noremap "k" "gk" "normal")
-           (vi-noremap "jk" "esc" "insert")
            ;; vim ex commands (ace)
            (vi-define-ex "help" "h" (lambda ()
                                         (ps:chain editor (show-keyboard-shortcuts))))
@@ -1444,9 +1442,6 @@ BUFFER is of type `my-editor-buffer'."
                 :margin-left "13px")
               `("code, textarea, .cell-actions"
                 :margin "9px 9px 0px 9px"))))))
-
-
-
 
 ;;; KAOMOJI
 
@@ -2259,7 +2254,7 @@ advanced search filters for more precise searches.")
                          (lobsters)
                          (nixpkgs)
                          (openstreetmaps)
-			                   ;; default
+                         ;; default
                          (google :shortcut "g"
                                  :safe-search nil)))))
 
