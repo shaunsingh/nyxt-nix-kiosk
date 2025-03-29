@@ -8,10 +8,12 @@
   '(vi-normal-mode)
  "Modes to enable in buffer by default")
 
+;; don't hint images
 (define-configuration nyxt/mode/hint:hint-mode
   ((nyxt/mode/hint:hints-alphabet "DSJKHLFAGNMXCWEIO")
    (nyxt/mode/hint:hints-selector "a, button, input, textarea, details, select")))
 
+;; add custom user agent and block utm
 (define-configuration nyxt/mode/reduce-tracking:reduce-tracking-mode
   ((nyxt/mode/reduce-tracking:query-tracking-parameters
     (append '("utm_source" "utm_medium" "utm_campaign" "utm_term" "utm_content")
@@ -30,6 +32,7 @@
 (defun make-important (property)
   (str:concat property " !important"))
 
+;; oxocarbon dark
 (define-palette (*base00-* "#161616")
                 (*base01-* "#262626")
                 (*base02-* "#393939")
@@ -49,6 +52,7 @@
                 (*font* "SF Pro Display")
                 (*mono* "Liga SFMono Nerd Font"))
 
+;; internal pages
 (define-configuration :web-buffer
   ((style
     (theme:themed-css (theme *browser*) 
@@ -68,7 +72,7 @@
         :margin-bottom "-9px")
       `("h2"
         :font-size "27px"
-	    :margin "0"
+        :margin "0"
         :margin-bottom "-9px"
         :color ,*base0C-*)
       `("h3"
@@ -108,6 +112,7 @@
         :background-color ,*base02-*
         :color ,*base06-*)))))
 
+;; modeline
 (define-configuration :status-buffer
   ((height 36)
    (style
@@ -130,11 +135,11 @@
         :color "#a2a9b0")
       `(button
         :all "unset")
-        ;;:color ,*base06-*)
       `((:and (:or .button .tab "#url") :hover)
         :font-weight "bold"
         :cursor "pointer")))))
 
+;; prompt
 (define-configuration :prompt-buffer
   ((style
     (theme:themed-css (theme *browser*)
@@ -267,6 +272,7 @@
         :background-color ,*base06-*
         :color ,(make-important *base00-*))))))
 
+;; message buffer
 (define-configuration (window)
  ((message-buffer-height 21)
   (message-buffer-style
@@ -281,6 +287,7 @@
       :padding-left "9px"
       :margin "3px")))))
 
+;; gopher etc. 
 (define-configuration nyxt/mode/small-web:small-web-mode
   ((style (str:concat
             %slot-value%
@@ -296,6 +303,7 @@
 
 ;;; STARTPAGE
 
+;; largely taken from fruit-of-the-day package, credit
 (defparameter list-of-fruits
   (list "abiu"
         "açaí"
@@ -586,7 +594,7 @@
 (define-configuration browser
   ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
 
-;;; COMMANDS
+;;; SPLIT
 
 #+linux
 (define-panel-command-global vsplit 
@@ -601,6 +609,8 @@ A poor man's vsplit :("
     (sleep 0.3)
     (buffer-load (quri:uri url) :buffer panel))
   "")
+
+;;; TRANSLATE
 
 (define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
     (panel "*Translate panel*" :right)
@@ -1018,7 +1028,7 @@ A poor man's vsplit :("
 
 ;;; ACE
 
-;; editor-mode was removed, reimplement it
+;; editor-mode was removed, reimplement it. modified from editor.lisp 
 (define-mode my-editor-mode ()
   "General-purpose editor mode, meant to be subclassed")
 
@@ -1046,7 +1056,7 @@ See `describe-class my-editor-mode' for details."))
            " to see the list of functions to implement."))))
   (:documentation "Return an HTML string representation of the file to be edited."))
 
-(define-class my-editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
+(define-class my-editor-buffer (network-buffer ;; questionable, but needed for `buffer-load'.
                              context-buffer modable-buffer document-buffer input-buffer)
   ((nyxt:title "*Editor*"))
   (:export-class-name-p t)
@@ -1139,7 +1149,8 @@ BUFFER is of type `my-editor-buffer'."
 (define-auto-rule '(match-scheme "editor")
   :included '(my-editor-mode))
 
-(define-mode ace-mode (my-editor-mode);; nyxt/mode/passthrough:passthrough-mode)
+;; extend our new mode. heavily inspired by nx-ace
+(define-mode ace-mode (my-editor-mode) ;; nyxt/mode/passthrough:passthrough-mode) ; TODO buggy 
   "Mode for usage with the Ace editor."
   ((style
     (theme:themed-css (theme *browser*)
@@ -1226,7 +1237,7 @@ BUFFER is of type `my-editor-buffer'."
        "C-s" 'my-editor-write-file
        "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer
-       "C-space" 'execute-command)))
+       "C-space" 'execute-command))) ;; due to passthrough not working
    (:toggler-command-p nil)
    (style (str:concat
            %slot-value%
@@ -1501,24 +1512,20 @@ currently active buffer."
 
 ;;; TOR
 
-;; (define-mode tor-proxy-mode (nyxt/mode/proxy:proxy-mode)
-;;   "Launch tor & set proxy to local Tor SOCKS5 proxy."
-;;   ((uiop:launch-program "tor" :ignore-error-status t)
-;;    (nyxt/mode/proxy:proxy (make-instance 
-;;                             'proxy
-;;                             :url (quri:uri "socks5://localhost:9050")
-;;                             :allowlist '("localhost")
-;;                             :proxied-downloads-p t))))
-
 (define-mode tor-proxy-mode (nyxt/mode/proxy:proxy-mode)
-  ((nyxt/mode/proxy:proxy (make-instance 'proxy
-                                         :url (quri:uri "socks5://localhost:9050")
-                                         :allowlist '("localhost" "localhost:8080")
-                                         :proxied-downloads-p t))))
+  "Launch tor & set proxy to local Tor SOCKS5 proxy."
+  ((uiop:launch-program "tor")
+    (nyxt/mode/proxy:proxy (make-instance 
+                            'proxy
+                            :url (quri:uri "socks5://localhost:9050")
+                            :allowlist '("localhost")
+                            :proxied-downloads-p t))))
 
 ;;; ZOTERO
 
 ;;; SEARCH
+
+;; all heavily inspired by nx-search-engine, credit
 
 (defmacro define-search-engine (name (&key shortcut fallback-url base-search-url
                                         force-supply-p manual-delims-p completion-function
