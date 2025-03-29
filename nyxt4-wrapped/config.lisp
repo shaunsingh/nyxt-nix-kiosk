@@ -722,7 +722,7 @@ A poor man's vsplit :("
       (make-buffer-focus :url zola-uri)))
 
 #+linux
-(define-panel-command zola-preview-split () 
+(define-panel-command-global zola-preview-split () 
   (panel "*zola preview*" :right) 
   "Open the Zola preview of the current markdown file on the right buffer"
   (run-thread "zola preview loader" 
@@ -733,7 +733,7 @@ A poor man's vsplit :("
 #+linux
 (define-command-global edit-and-preview-with-zola (&key (file (my-prompt-for-file)))
   "Open a markdown file with editor and start Zola preview if possible."
-  (let ((buffer (make-instance 'editor-buffer 
+  (let ((buffer (make-instance 'my-editor-buffer 
                                :url (quri:make-uri :scheme "editor" :path file)))
         (zola-dir (find-zola-config-directory file)))
     (set-current-buffer buffer)
@@ -1040,11 +1040,11 @@ See `describe-class my-editor-mode' for details."))
        (:nstyle (style (buffer editor))))
       (:body
        (:p "Please configure an editor mode to use an editor buffer. See "
-           (:code "describe-class") " for " (:code "editor-buffer")
+           (:code "describe-class") " for " (:code "my-editor-buffer")
            " to see the list of functions to implement."))))
   (:documentation "Return an HTML string representation of the file to be edited."))
 
-(define-class editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
+(define-class my-editor-buffer (network-buffer ; Questionable, but needed for `buffer-load'.
                              context-buffer modable-buffer document-buffer input-buffer)
   ((nyxt:title "*Editor*"))
   (:export-class-name-p t)
@@ -1053,10 +1053,10 @@ See `describe-class my-editor-mode' for details."))
   (:metaclass user-class)
   (:documentation "Buffer to edit files"))
 
-(defmethod nyxt:default-modes :around ((buffer editor-buffer))
+(defmethod nyxt:default-modes :around ((buffer my-editor-buffer))
   (set-difference (call-next-method) '(document-mode base-mode)))
 
-(defmethod file ((buffer editor-buffer))
+(defmethod file ((buffer my-editor-buffer))
   (uiop:parse-native-namestring (quri:uri-path (url buffer))))
 
 (define-internal-scheme "editor"
@@ -1069,12 +1069,12 @@ See `describe-class my-editor-mode' for details."))
           (set-content mode (uiop:read-file-string file)))
         (markup mode))))
 
-(defmethod editor ((editor-buffer editor-buffer))
-  (let ((mode (find-submode 'my-editor-mode editor-buffer)))
+(defmethod editor ((my-editor-buffer my-editor-buffer))
+  (let ((mode (find-submode 'my-editor-mode my-editor-buffer)))
     (unless (eq 'my-editor-mode (serapeum:class-name-of mode))
       mode)))
 
-(defmethod write-file-with-editor ((buffer editor-buffer) &key (if-exists :error))
+(defmethod write-file-with-editor ((buffer my-editor-buffer) &key (if-exists :error))
   (cond
     ((editor buffer)
      (handler-case
@@ -1105,13 +1105,13 @@ See `describe-class my-editor-mode' for details."))
 (define-command my-editor-open-file (&key (buffer (current-buffer)) (file (prompt-for-file)))
   "Open my file.
 
-BUFFER is of type `editor-buffer'."
+BUFFER is of type `my-editor-buffer'."
   (buffer-load (quri:make-uri :scheme "editor" :path file) :buffer buffer))
 
 (define-command my-editor-write-file (&key (buffer (current-buffer)))
   "Write my file to storage.
 
-BUFFER is of type `editor-buffer'."
+BUFFER is of type `my-editor-buffer'."
   (if (uiop:file-exists-p (file buffer))
       (if-confirm ((format nil "Overwrite ~s?" (file buffer))
                    :yes "overwrite" :no "cancel")
@@ -1121,7 +1121,7 @@ BUFFER is of type `editor-buffer'."
 
 (define-command-global edit-file (&optional (file (prompt-for-file)))
   "Open a new editor and query my FILE to edit in it."
-  (set-current-buffer (make-instance 'editor-buffer
+  (set-current-buffer (make-instance 'my-editor-buffer
                                      :url (quri:make-uri :scheme "editor" :path file))))
 
 (defun prompt-for-editor-user-file ()
@@ -1131,7 +1131,7 @@ BUFFER is of type `editor-buffer'."
              :sources 'nyxt::user-file-source))))
 
 (define-command-global edit-user-file (&optional (file (prompt-for-editor-user-file)))
-  (set-current-buffer (make-instance 'editor-buffer
+  (set-current-buffer (make-instance 'my-editor-buffer
                                      :url (quri:make-uri :scheme "editor" :path file))))
 
 (define-auto-rule '(match-scheme "editor")
@@ -1201,27 +1201,27 @@ BUFFER is of type `editor-buffer'."
 
 (define-configuration ace-mode
   ((keyscheme-map
-    (define-keyscheme-map "editor-mode" ()
+    (define-keyscheme-map "my-editor-mode" ()
       nyxt/keyscheme:default
       (list
        "C-r" 'reload-current-buffer
        "f11" 'toggle-fullscreen)
       nyxt/keyscheme:cua
       (list
-       "C-o" 'editor-open-file
-       "C-s" 'editor-write-file
+       "C-o" 'my-editor-open-file
+       "C-s" 'my-editor-write-file
        "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer)
       nyxt/keyscheme:emacs
       (list
-       "C-x C-f" 'editor-open-file
-       "C-x C-s" 'editor-write-file
+       "C-x C-f" 'my-editor-open-file
+       "C-x C-s" 'my-editor-write-file
        "C-x C-k" 'delete-current-buffer
        "C-x b" 'switch-buffer)
       nyxt/keyscheme:vi-normal
       (list
-       "C-o" 'editor-open-file
-       "C-s" 'editor-write-file
+       "C-o" 'my-editor-open-file
+       "C-s" 'my-editor-write-file
        "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer)))
    (:toggler-command-p nil)
@@ -1410,8 +1410,8 @@ BUFFER is of type `editor-buffer'."
            ;; load workers
            (req "ace/worker/base")))))))
 
-(defmethod nyxt:default-modes append ((buffer editor-buffer))
-  "Add `my-editor-mode' and `ace-mode' to `editor-buffer' by default."
+(defmethod nyxt:default-modes append ((buffer my-editor-buffer))
+  "Add `my-editor-mode' and `ace-mode' to `my-editor-buffer' by default."
   (list 'my-editor-mode 'ace-mode))
 
 ;;; REPL
