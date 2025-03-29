@@ -1201,37 +1201,29 @@ BUFFER is of type `editor-buffer'."
 
 (define-configuration ace-mode
   ((keyscheme-map
-     (define-keyscheme-map "my-editor-mode" ()
-        nyxt/keyscheme:vi-normal
-        (list
-         "C-o" 'my-editor-open-file
-         "C-s" 'my-editor-write-file
-         "C-w" 'delete-current-buffer
-         "C-tab" 'switch-buffer)))
-  ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
-      keyscheme:default
+      nyxt/keyscheme:default
       (list
        "C-r" 'reload-current-buffer
        "f11" 'toggle-fullscreen)
-      keyscheme:cua
+      nyxt/keyscheme:cua
       (list
        "C-o" 'editor-open-file
        "C-s" 'editor-write-file
        "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer)
-      keyscheme:emacs
+      nyxt/keyscheme:emacs
       (list
        "C-x C-f" 'editor-open-file
        "C-x C-s" 'editor-write-file
        "C-x C-k" 'delete-current-buffer
        "C-x b" 'switch-buffer)
-      keyscheme:vi-normal
+      nyxt/keyscheme:vi-normal
       (list
        "C-o" 'editor-open-file
        "C-s" 'editor-write-file
        "C-w" 'delete-current-buffer
-       "C-tab" 'switch-buffer))))
+       "C-tab" 'switch-buffer)))
    (:toggler-command-p nil)
    (style (str:concat
            %slot-value%
