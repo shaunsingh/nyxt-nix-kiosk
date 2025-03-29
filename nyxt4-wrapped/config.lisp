@@ -1,5 +1,7 @@
 (in-package #:nyxt-user)
 
+;;; this file was created and edited in NYXT with ace-mode
+
 ;;; MODES
 
 (defvar *buffer-modes*
