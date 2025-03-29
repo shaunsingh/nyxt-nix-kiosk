@@ -5,5 +5,5 @@
   pkgs,
   ...
 }: {
-  xdg.configFile."nyxt/config.lisp".source = ./config.lisp;
+  xdg.configFile."nyxt/config.lisp".source = ../config.lisp;
 }

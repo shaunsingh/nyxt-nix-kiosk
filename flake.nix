@@ -26,7 +26,7 @@
       nyxtkiosk = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [
-          ./configuration.nix 
+          ./configuration.nix
           home-manager.nixosModules.home-manager
           ({
             inputs,
@@ -34,8 +34,7 @@
             config,
             pkgs,
             ...
-          }: 
-          let 
+          }: let
             flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
           in {
             config = {
@@ -46,7 +45,6 @@
                 settings = {
                   experimental-features = "nix-command flakes";
                   flake-registry = "";
-                  # add binary caches
                   trusted-public-keys = [
                     "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
                     "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
@@ -58,16 +56,15 @@
                 };
               };
               nixpkgs = {
-                overlays = [ 
-                  # inputs.nixpkgs-wayland.overlay 
-                  # inputs.eww.overlays
+                overlays = [
+                  inputs.nixpkgs-wayland.overlay
                 ];
                 config.allowUnfree = true;
               };
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = { inherit inputs outputs; };
+                extraSpecialArgs = {inherit inputs outputs;};
               };
             };
           })
@@ -76,4 +73,3 @@
     };
   };
 }
-

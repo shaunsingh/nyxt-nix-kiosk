@@ -1,17 +1,20 @@
-{ config, lib, pkgs, ... }:
-
-let 
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   # needed fonts
-  otf-apple = pkgs.callPackage ./otf-apple.nix { };
-  sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix { };
+  otf-apple = pkgs.callPackage ./otf-apple.nix {};
+  sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix {};
 
   # enable DRM support
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
-#     buildInputs =
-#       oldAttrs.buildInputs
-#       ++ [
-#         pkgs.libgpg-error
-#       ];
+    #     buildInputs =
+    #       oldAttrs.buildInputs
+    #       ++ [
+    #         pkgs.libgpg-error
+    #       ];
     cmakeFlags =
       oldAttrs.cmakeFlags
       ++ [
@@ -28,7 +31,7 @@ let
       hash = "sha256-T5p3OaWp28rny81ggdE9iXffmuh6wt6XSuteTOT8FLI=";
       stripRoot = false;
     };
-    LD_LIBRARY_PATH = 
+    LD_LIBRARY_PATH =
       lib.makeLibraryPath
       [
         pkgs.glib
@@ -77,7 +80,7 @@ in {
       bluez-experimental
       tor
       gtk3
-  
+
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
         gamescope -f -s ${builtins.toString config.nyxt4-wrapped.scale} -- nyxt "$@"
@@ -85,11 +88,11 @@ in {
       (pkgs.writeShellScriptBin "nyxt-cage" ''
         GTK_USE_PORTAL=0 cage -m last -s -d -- sh -c 'wlr-randr --output ${config.nyxt4-wrapped.display} --mode ${config.nyxt4-wrapped.resolution} --scale ${builtins.toString config.nyxt4-wrapped.scale} && nyxt'
       '')
- 
-      # dev dependencies 
-      zola 
-    ];  
-  
+
+      # dev dependencies
+      zola
+    ];
+
     fonts = {
       packages = with pkgs; [
         sf-mono-liga-bin
@@ -109,7 +112,7 @@ in {
       enable = true;
       capSysNice = true;
     };
-  
+
     # wpa_supplicant + wpa3 doesn't work on broadcom
     networking.networkmanager.enable = true;
   };

@@ -5,11 +5,10 @@
   pkgs,
   ...
 }: {
-
   imports = [
-    ./apple-silicon-support  # asahi support
-    ./nyxt4-wrapped          # nyxt kiosk
-    ./sway                   # sway for when nyxt doesn't work
+    ./apple-silicon-support # asahi support
+    ./nyxt4-wrapped # nyxt kiosk
+    ./sway # sway for when nyxt doesn't work
   ];
 
   # configuration for nyxt kiosk
@@ -20,23 +19,19 @@
   };
 
   # theme our console
-  console =
-    let
-      normal = [ "161616" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "dde1e6" ];
-      bright = [ "525252" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "ffffff" ];
-    in
-    {
-      colors = normal ++ bright;
-      keyMap = "us";
-    };
+  console = let
+    normal = ["161616" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "dde1e6"];
+    bright = ["525252" "33b1ff" "ff7eb6" "42be65" "08bdba" "82cfff" "78a9ff" "ffffff"];
+  in {
+    colors = normal ++ bright;
+    keyMap = "us";
+  };
 
   # essentials + testing
   environment.systemPackages = with pkgs; [
     vim
     git
     wget
-    chromium
-    vscode-fhs
     mesa-demos
     vulkan-tools
   ];
@@ -63,7 +58,6 @@
     enable = true;
     settings = {
       default_session = {
-        # command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd 'sway'";
         command = "sway";
         user = "nyxtkiosk";
       };
@@ -77,7 +71,7 @@
   # state
   i18n = {
     defaultLocale = "en_US.UTF-8";
-    supportedLocales = [ "en_US.UTF-8/UTF-8" ];
+    supportedLocales = ["en_US.UTF-8/UTF-8"];
   };
 
   networking.hostName = "nyxtkiosk";
