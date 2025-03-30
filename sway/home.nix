@@ -44,6 +44,7 @@ in {
   ### -- sway
   wayland.windowManager.sway = {
     enable = true;
+    # package = pkgs.swayfx-unwrapped;
     systemd.enable = true;
     extraSessionCommands = ''
       export NIXOS_OZONE_WL=1
@@ -250,6 +251,9 @@ in {
       # gestures
       bindgesture swipe:3:right workspace prev
       bindgesture swipe:3:left workspace next
+      
+      # swayfx
+      # shadows enable
     '';
   };
   services.kanshi.systemdTarget = "sway-session.target";
@@ -625,7 +629,7 @@ in {
     Service = {
       Environment = let
         dependencies = with pkgs; [
-          kickoff
+          #kickoff
           brightnessctl
           pamixer
           coreutils

@@ -1238,7 +1238,6 @@ BUFFER is of type `my-editor-buffer'."
        "C-w" 'delete-current-buffer
        "C-tab" 'switch-buffer
        "C-space" 'execute-command))) ;; due to passthrough not working
-   (:toggler-command-p nil)
    (style (str:concat
            %slot-value%
            (theme:themed-css (theme *browser*)
@@ -1397,6 +1396,7 @@ BUFFER is of type `my-editor-buffer'."
            (ps:chain editor (set-option "displayIndentGuides" nil))     ;; disable indent markers
            (ps:chain editor (set-option "hScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (h)
            (ps:chain editor (set-option "vScrollBarAlwaysVisible" nil)) ;; don't always show scrollbar (v)
+           (ps:chain editor (set-option "animatedScroll" t))            ;; animate smooth scrollling 
            (ps:chain editor (set-option "useSoftTabs" t))               ;; use spaces instead of tabs
            (ps:chain editor (set-option "enableSnippets" t))            ;; enable snippet support
            (ps:chain editor (set-option "enableBasicAutocompletion" t)) ;; enable autocomplete support (basic)
@@ -2302,15 +2302,15 @@ advanced search filters for more precise searches.")
 ;;           (round prc))))
 ;;   (percentage))
  
-;; (defmethod my-format-status-load-status ((status status-buffer))
-;;   "Render the load status to HTML string"theme:on-background-color
-;;   (let ((buffer (current-buffer (window status))))
-;;     (if (web-buffer-p buffer)
-;;         (case (slot-value buffer 'status)
-;;           (:loading "∞ ")
-;;           (:unloaded "∅ ")
-;;           (:finished ""))
-;;         "")))
+(defmethod my-format-status-load-status ((status status-buffer))
+  "Render the load status to HTML string"
+  (let ((buffer (current-buffer (window status))))
+    (if (web-buffer-p buffer)
+        (case (slot-value buffer 'status)
+          (:loading "∞ ")
+          (:unloaded "∅ ")
+          (:finished ""))
+        "")))
 
 (defmethod my-format-status-url ((status status-buffer))
   "Format the current URL for the STATUS buffer"
@@ -2413,9 +2413,9 @@ advanced search filters for more precise searches.")
                   (format nil "[~a/~a]"
                       buffer-count
                       (length (buffer-list))))
-;;             (:div :id "percentage"
-;;                   (format nil "L~a"
-;;                       (%percentage)))
+            ;;(:div :id "percentage"
+            ;;      (format nil "L~a"
+            ;;          (%percentage)))
              (:div :id "url"
                    (:raw
                     ;;(my-format-status-load-status status)
