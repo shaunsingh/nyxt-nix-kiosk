@@ -295,7 +295,6 @@ in {
   home.pointerCursor = {
     name = "phinger-cursors";
     package = pkgs.phinger-cursors;
-    size = 256;
   };
   gtk = {
     cursorTheme = {
