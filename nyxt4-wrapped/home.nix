@@ -5,5 +5,8 @@
   pkgs,
   ...
 }: {
-  xdg.configFile."nyxt/config.lisp".source = ../config.lisp;
+  xdg.configFile."nyxt" = {
+    source = ../config;
+    recursive = true;
+  };
 }
