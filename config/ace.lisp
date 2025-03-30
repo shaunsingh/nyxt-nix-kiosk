@@ -409,5 +409,3 @@ BUFFER is of type `my-editor-buffer'."
 (defmethod nyxt:default-modes append ((buffer my-editor-buffer))
   "Add `my-editor-mode' and `ace-mode' to `my-editor-buffer' by default."
   (list 'my-editor-mode 'ace-mode))
-
-;

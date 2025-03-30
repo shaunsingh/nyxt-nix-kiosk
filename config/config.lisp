@@ -35,6 +35,10 @@
 (define-nyxt-user-system-and-load nyxt-user/extra-config
   :components ("startpage"
                "commands"
+	       "hardware"
+	       "launcher"
+	       "wayland"
+	       "zola"
                "tor"
                "mpv"
                "ace"
@@ -57,10 +61,6 @@
 
 ;; we wan't to be in insert mode in the prompt buffer, don't show source if theres only one
 (define-configuration (prompt-buffer)
-  ((default-modes `(vi-insert-mode
-         ,@%slot-value%))
-   (hide-single-source-header-p t)))
-guration (prompt-buffer)
   ((default-modes `(vi-insert-mode
          ,@%slot-value%))
    (hide-single-source-header-p t)))
