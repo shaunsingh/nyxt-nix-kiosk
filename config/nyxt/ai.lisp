@@ -110,8 +110,7 @@
          (curl-command
           (format nil "curl ~A -H \"Content-Type: application/json\" -H \"Authorization: Bearer ~A\" -d \"~A\""
                   *model-host*
-                  ;;(uiop:getenv "OPENAI_KEY")
-                  *key* 
+                  (uiop:getenv "OPENAI_KEY")
                   escaped-json)))
     (ai-helper curl-command)))
 
@@ -122,8 +121,7 @@
          (concatenate 'string
                       "curl " *model-host*
                       " -H \"Content-Type: application/json\""
-                      ;; " -H \"Authorization: Bearer " (uiop:getenv "OPENAI_KEY") "\" "
-                      " -H \"Authorization: Bearer " *key* "\" "
+                      " -H \"Authorization: Bearer " (uiop:getenv "OPENAI_KEY") "\" "
                       " -d '{\"messages\": [{\"role\": \"user\", \"content\": \"Summarize: " some-text
                       "\"}], \"model\": " *model* ", \"max_tokens\": " (write-to-string max-tokens) "}'")))
     (ai-helper curl-command)))
@@ -137,8 +135,7 @@
           (concatenate 'string
                        "curl https://api.openai.com/v1/embeddings "
                        " -H \"Content-Type: application/json\""
-                       ;; " -H \"Authorization: Bearer " (uiop:getenv "OPENAI_KEY") "\" "
-                       " -H \"Authorization: Bearer " *key* "\" "
+                       " -H \"Authorization: Bearer " (uiop:getenv "OPENAI_KEY") "\" "
                        " -d '{\"input\": \"" text
                        "\", \"model\": \"text-embedding-3-small\"}'"))
          (response (uiop:run-program curl-command :output :string)))
@@ -201,162 +198,108 @@
 ;;                         (concatenate 'string (subseq response-string 0 100) "...")
 ;;                         response-string))))))
 
-(define-command-global ask-ai-question ()
-  "Ask a question to the AI assistant and display the answer in the message area."
+(define-command-global ai-ask-question ()
+  "Ask a question to the AI assistant and display the answer."
   (let* ((question (first (prompt
-                          :prompt "Ask AI a question:"
+                          :prompt "Ask AI: "
                           :sources (make-instance 'prompter:raw-source))))
-         (response (answer-question question 25))
-         (content (extract-content-from-response response)))
-    (echo "~A" content)))
+         (response (answer-question question 200)))
+    (echo "~A" response)))
 
-(define-panel-command-global summarize-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+;; TODO
+(define-panel-command-global ai-summarize-selection (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
     (panel "*AI Summary*" :right)
-  "Summarize the selected text and display it in a panel."
+  "Summarize the selected text in a panel."
   (when (string= selection "")
     (error "No text selected"))
-  (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
   (run-thread "AI Summary"
-    (let* ((summary-text (summarize selection 25))
-           (content (extract-content-from-response summary-text))
-           (html (format nil "<h2>AI Summary</h2><div>~A</div>" content)))
-      (ffi-buffer-evaluate-javascript
+    (let* ((summary-text (summarize selection 100))
+           (html (format nil "<h2>AI Summary</h2><div>~A</div>" summary-text)))
+      (nyxt-user::ffi-buffer-evaluate-javascript
        panel
        (ps:ps
          (setf (ps:@ document body |innerHTML|) (ps:lisp html))))))
-  "Summarizing selection...")
+  "Summarizing...")
 
-(define-panel-command-global expand-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+(define-panel-command-global ai-expand-selection (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
     (panel "*AI Expanded*" :right)
-  "Expand the selected text with AI and display it in a panel."
+  "Expand the selected text with AI."
   (when (string= selection "")
     (error "No text selected"))
-  (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
   (run-thread "AI Expansion"
-    (let* ((prompt (format nil "Expand on this text with more details and explanation: ~A" selection))
-           (expanded-text (completions prompt 25))
-           (content (extract-content-from-response expanded-text))
-           (html (format nil "<h2>AI Expanded Content</h2><div>~A</div>" content)))
-      (ffi-buffer-evaluate-javascript
+    (let* ((prompt (format nil "Expand on this text: ~A" selection))
+           (expanded-text (completions prompt 50))
+           (html (format nil "<h2>AI Expanded</h2><div>~A</div>" expanded-text)))
+      (nyxt-user::ffi-buffer-evaluate-javascript
        panel
        (ps:ps
          (setf (ps:@ document body |innerHTML|) (ps:lisp html))))))
-  "Expanding selection...")
+  "Expanding...")
 
-(define-panel-command-global generate-content ()
-    (panel "*AI Generated Content*" :right)
-  "Generate content based on a prompt and display it in a panel."
+(define-panel-command-global ai-generate-content ()
+    (panel "*AI Content*" :right)
+  "Generate content based on a prompt."
   (let ((prompt (first (prompt
-                        :prompt "What content would you like to generate?"
+                        :prompt "Generate: "
                         :sources (make-instance 'prompter:raw-source)))))
-    (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
-    (run-thread "AI Content Generation"
-      (let* ((generated-text (completions prompt 50))
-             (content (extract-content-from-response generated-text))
-             (html (format nil "<h2>AI Generated Content</h2><div>~A</div>" content)))
-        (ffi-buffer-evaluate-javascript
+    (run-thread "AI Gen"
+      (let* ((generated-text (completions prompt 300))
+             (html (format nil "<h2>AI Content</h2><div>~A</div>" generated-text)))
+        (nyxt-user::ffi-buffer-evaluate-javascript
          panel
          (ps:ps
            (setf (ps:@ document body |innerHTML|) (ps:lisp html))))))
-    "Generating content..."))
+    "Generating..."))
 
-(define-panel-command-global analyze-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+;; TODO
+(define-panel-command-global ai-analyze-selection (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
     (panel "*AI Analysis*" :bottom)
-  "Analyze the selected text and provide insights."
+  "Analyze the selected text."
   (when (string= selection "")
     (error "No text selected"))
-  (setf (ffi-height panel) (round (/ (ffi-height (current-window)) 3)))
   (run-thread "AI Analysis"
-    (let* ((prompt (format nil "Analyze this text and provide insights: ~A" selection))
-           (analysis (completions prompt 50))
-           (content (extract-content-from-response analysis))
-           (html (format nil "<h2>AI Analysis</h2><div>~A</div>" content)))
-      (ffi-buffer-evaluate-javascript
+    (let* ((prompt (format nil "Analyze this text: ~A" selection))
+           (analysis (completions prompt 150))
+           (html (format nil "<h2>AI Analysis</h2><div>~A</div>" analysis)))
+      (nyxt-user::ffi-buffer-evaluate-javascript
        panel
        (ps:ps
          (setf (ps:@ document body |innerHTML|) (ps:lisp html))))))
-  "Analyzing selection...")
+  "Analyzing...")
 
-(define-command-global describe-image ()
-  "Generate a description for an image URL."
-  (let* ((image-url (first (prompt
-                            :prompt "Enter image URL to describe:"
-                            :sources (make-instance 'prompter:raw-source))))
-         (prompt (format nil "Describe this image found at: ~A" image-url))
-         (description (completions prompt 25))
-         (content (extract-content-from-response description)))
-    (echo "Image Description: ~A" content)))
-
-(define-panel-command-global ai-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+(define-panel-command-global ai-translate-selection (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
     (panel "*AI Translation*" :right)
-  "Translate the selected text using AI."
+  "Translate selected text using AI."
   (when (string= selection "")
     (error "No text selected"))
   (let* ((target-language (first (prompt
-                                  :prompt "Translate to which language?"
+                                  :prompt "Translate to:"
                                   :sources (make-instance
                                            'prompter:source
                                            :name "Languages"
-                                           :constructor '("English" "Spanish" "French" "German" "Chinese" "Japanese" "Russian" "Arabic"))))))
-    (setf (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+                                           :constructor '("English" "Spanish" "French" "German" "Chinese" "Japanese"))))))
     (run-thread "AI Translation"
-      (let* ((prompt (format nil "Translate this text to ~A: ~A" target-language selection))
-             (translation (completions prompt 25))
-             (content (extract-content-from-response translation))
-             (html (format nil "<h2>AI Translation (~A)</h2><div>~A</div>" target-language content)))
-        (ffi-buffer-evaluate-javascript
+      (let* ((prompt (format nil "Translate to ~A: ~A" target-language selection))
+             (translation (completions prompt 150))
+             (html (format nil "<h2>~A Translation</h2><div>~A</div>" target-language translation)))
+        (nyxt-user::ffi-buffer-evaluate-javascript
          panel
          (ps:ps
            (setf (ps:@ document body |innerHTML|) (ps:lisp html)))))))
-  "Translating selection...")
+  "Translating...")
 
-(define-panel-command-global explain-code-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+;; TODO
+(define-panel-command-global ai-explain-code-selection (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
     (panel "*Code Explanation*" :bottom)
-  "Explain the selected code using AI."
+  "Explain selected code using AI."
   (when (string= selection "")
     (error "No code selected"))
-  (setf (ffi-height panel) (round (/ (ffi-height (current-window)) 2)))
   (run-thread "Code Explanation"
-    (let* ((prompt (format nil "Explain this code in detail: ~A" selection))
-           (explanation (completions prompt 50))
-           (content (extract-content-from-response explanation))
-           (html (format nil "<h2>Code Explanation</h2><div>~A</div>" content)))
-      (ffi-buffer-evaluate-javascript
+    (let* ((prompt (format nil "Explain this code: ~A" selection))
+           (explanation (completions prompt 200))
+           (html (format nil "<h2>Code Explanation</h2><div>~A</div>" explanation)))
+      (nyxt-user::ffi-buffer-evaluate-javascript
        panel
        (ps:ps
          (setf (ps:@ document body |innerHTML|) (ps:lisp html))))))
   "Explaining code...")
-
-;;; Register AI commands in context menu
-;; (defmethod initialize-instance :after ((browser browser) &key)
-;;   "Add AI commands to Nyxt's context menu."
-;;   (ffi-add-context-menu-command
-;;     'summarize-selection
-;;     "Summarize Selection with AI")
-;;   (ffi-add-context-menu-command
-;;     'analyze-selection
-;;     "Analyze with AI")
-;;   (ffi-add-context-menu-command
-;;     'expand-selection
-;;     "Expand with AI")
-;;   (ffi-add-context-menu-command
-;;     'ai-translate-selection
-;;     "AI Translate Selection")
-;;   (ffi-add-context-menu-command
-;;     'explain-code-selection
-;;     "Explain Code with AI")
-;;   (ffi-add-context-menu-command
-;;     'summarize-selection
-;;     "Summarize with AI")
-;;   (ffi-add-context-menu-command
-;;     'expand-selection
-;;     "Expand with AI")
-;;   (ffi-add-context-menu-command
-;;     'analyze-selection
-;;     "Analyze with AI")
-;;   (ffi-add-context-menu-command
-;;     'ai-translate-selection
-;;     "Translate with AI")
-;;   (ffi-add-context-menu-command
-;;     'explain-code-selection
-;;     "Explain Code with AI"))

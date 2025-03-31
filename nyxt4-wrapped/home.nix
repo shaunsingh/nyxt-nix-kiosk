@@ -6,7 +6,7 @@
   ...
 }: {
   xdg.configFile."nyxt" = {
-    source = ../config;
+    source = ../config/nyxt;
     recursive = true;
   };
 }
