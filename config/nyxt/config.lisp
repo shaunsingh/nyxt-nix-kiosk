@@ -1,20 +1,5 @@
 (in-package #:nyxt-user)
 
-(defun dot-product-recursive (a b)
-  "Calculate dot product recursively"
-  (if (or (null a) (null b))
-      0
-      (+ (* (first a) (first b))
-         (dot-product-recursive (rest a) (rest b)))))
-
-(defun dot-product (list1 list2)
-  "Calculate dot product iteratively"
-  (let ((sum 0))
-    (loop for x in list1
-          for y in list2
-          do (setf sum (+ sum (* x y))))
-    sum))
-
 ;;; this file was created and edited in NYXT with ace-mode
 
 (defvar *buffer-modes*
@@ -90,3 +75,20 @@
 ;;              (ticks-per-second internal-time-units-per-second)
 ;;              (startup-time (/ (- end-time start-time) ticks-per-second)))
 ;;         (echo (format nil "Startup time: ~,3f seconds" startup-time)))))))
+
+(defun dot-product-recursive (a b)
+  "Calculate dot product recursively"
+  (if (or (null a) (null b))
+      0
+      (+ (* (first a) (first b))
+         (dot-product-recursive (rest a) (rest b)))))
+
+(defun dot-product (list1 list2)
+  "Calculate dot product iteratively"
+  (let ((sum 0))
+    (loop for x in list1
+          for y in list2
+          do (setf sum (+ sum (* x y))))
+    sum))
+
+
