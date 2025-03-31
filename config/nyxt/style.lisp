@@ -108,7 +108,7 @@
         :display "flex"
         :white-space "nowrap"
         :overflow "hidden")
-      `("#vi-mode, #buffers, #load, #percentage, #url, #tab, #minions, #modes"
+      `("#vi-mode, #buffers, #load, #percentage, #url, .tab, #minions, #modes"
         :padding-left "9px")
       `("#modes"
         :color "#a2a9b0")
@@ -174,8 +174,6 @@
         :stroke ,*base04-*)
       `(".button:hover svg path"
         :stroke ,*base06-*)
-      `((:and .button (:or :visited :active))
-        :color ,*base04-*)
       `(input
         :background-color ,*base01-*
         :padding "0"
@@ -232,7 +230,7 @@
          :font-family ,*mono*)
         ("tr:hover"
          :background-color ,*base0C-*
-         :color ,*base00-*
+         ;;:color ,*base00-*
          :cursor "pointer"
          :font-weight "bold")
         (th
@@ -242,14 +240,11 @@
          :padding-left "4px"
          :text-align "left"))
       `("#selection"
-        :background-color ,*base0B-*
-        :color ,(make-important *base00-*))
+        :background-color ,*base0B-*)
       `(.marked
-        :background-color ,*base0B-*
-        :color ,(make-important *base00-*))
+        :background-color ,*base0B-*)
       `(.selected
-        :background-color ,*base06-*
-        :color ,(make-important *base00-*))))))
+        :background-color ,*base06-*)))))
 
 ;; message buffer
 (define-configuration (window)
@@ -305,5 +300,3 @@
                 :margin-left "13px")
               `("code, textarea, .cell-actions"
                 :margin "9px 9px 0px 9px"))))))
-
-
