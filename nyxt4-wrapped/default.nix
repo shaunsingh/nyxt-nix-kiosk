@@ -7,6 +7,7 @@
   # needed fonts
   otf-apple = pkgs.callPackage ./otf-apple.nix {};
   sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix {};
+  nyxt4-electron = pkgs.callPackage ./nyxt.nix {};
 
   # enable DRM support
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
@@ -23,8 +24,8 @@
   });
 
   # nyxt prerelease w/ DRM support
-  nyxt4 = pkgs.nyxt.overrideAttrs (oldAttrs: rec {
-    pname = "nyxt4";
+  nyxt4-prerelease-3 = pkgs.nyxt.overrideAttrs (oldAttrs: rec {
+    pname = "nyxt4-3";
     version = "4.0.0-pre-release-3";
     src = pkgs.fetchzip {
       url = "https://github.com/atlas-engineer/nyxt/releases/download/${version}/nyxt-${version}-source-with-submodules.tar.xz";
@@ -66,7 +67,7 @@ in {
 
     environment.defaultPackages = with pkgs; [
       # apps
-      nyxt4
+      nyxt4-electron
       cage
 
       # tools

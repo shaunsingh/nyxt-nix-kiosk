@@ -2,6 +2,11 @@
 
 ;;; STARTPAGE
 
+(defvar *logo-svg* 
+  (alexandria:read-file-into-string 
+   (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
+                    (user-homedir-pathname))))
+
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
   (sort sequence #'local-time:timestamp> :key key))
@@ -211,7 +216,6 @@
               (capitalize-word current-fruit)
               current-day))))
 
-;; modified from time.lisp
 (define-internal-page-command-global startpage ()
     (buffer "*startpage*")
   "my custom startpage"
@@ -224,18 +228,6 @@
                         (:a :href (render-url (url bookmark))
                             (render-url (url bookmark)))))
                  (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/mode/bookmark:bookmarks-file mode)))))))))
-         ;; reimplemented from nyxt 2.x
-;;          (history-html-list (&key (limit 6) (separator " → "))
-;;            (spinneret:with-html-string
-;;              (let ((history-entries (subseq (history-vector *browser*) 
-;;                                            0 
-;;                                            (min limit (length (history-vector *browser*))))))
-;;                (if (plusp (length history-entries))
-;;                    (dolist (entry history-entries)
-;;                      (:li (title entry) separator
-;;                           (:a :href (render-url (url entry))
-;;                               (render-url (url entry)))))
-;;                    (:p "No history entries."))))))
     (let ((current-year (local-time:timestamp-year (local-time:now)))
           (dashboard-style (theme:themed-css (theme *browser*)
                               `("#motto"
@@ -254,10 +246,12 @@
      (spinneret:with-html-string
        (:nstyle dashboard-style)
        (:div :id "container"
-        (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
+         ;;(:div :id "logo-container"
+         ;;  (:raw *logo-svg*))
+         (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
          (:div :id "buttons"
-          (:nbutton :text "Repl"
-           '(nyxt/mode/repl:repl))
+          ;;(:nbutton :text "Repl"
+           ;;'(nyxt/mode/repl:repl))
           (:nbutton :text "Manual"
            '(make-buffer-focus :url (nyxt-url 'manual)))
           (:nbutton :text "Changelog"
@@ -276,8 +270,6 @@
          "製品を作り出すことです。")
         (:h2 "Bookmarks")
         (:ul (:raw (list-bookmarks :limit 9)))
-        ;;(:h3 "History")
-        ;;(:ul (:raw (history-html-list :limit 9)))
         (:h3 (fruit-of-the-day-message))
         (:div :id "copyright"
           (format nil "version ~a ~a" (name nyxt::*renderer*) nyxt::+version+)
@@ -292,5 +284,3 @@
 
 (define-configuration browser
   ((default-new-buffer-url (quri:uri "nyxt:nyxt-user:startpage"))))
-
-

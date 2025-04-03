@@ -119,4 +119,31 @@
                    (:raw
                      (my-format-modes status)))))))
 
+;; style
+(define-configuration :status-buffer
+  ((height 36)
+   (style
+    (theme:themed-css (theme *browser*)
+      `(*
+        :font-family ,*mono*
+        :font-size "11px")
+      `(body
+        :margin "9px"
+        :margin-top "11px"
+        :background-color ,*base02-* 
+        :color ,*base05-*)
+      `("#container"
+        :display "flex"
+        :white-space "nowrap"
+        :overflow "hidden")
+      `("#vi-mode, #buffers, #load, #percentage, #url, .tab, #minions, #modes"
+        :padding-left "9px")
+      `("#modes"
+        :color "#a2a9b0")
+      `(button
+        :all "unset")
+      `((:and (:or .button .tab "#url") :hover)
+        :font-weight "bold"
+        :cursor "pointer")))))
+
 

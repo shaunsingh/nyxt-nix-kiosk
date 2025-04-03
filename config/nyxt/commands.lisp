@@ -18,18 +18,18 @@ A poor man's vsplit :("
 
 ;;; TRANSLATE
 
-(define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
-    (panel "*Translate panel*" :right)
-  "Open the translation of the selection in a panel buffer."
-  (run-thread "search translation URL loader"
-    (setf
-      (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
-      (sleep 0.3)
-      (buffer-load (quri:uri (format nil (nyxt::search-url (nyxt::default-search-engine))
-                                     (str:concat "translate " (ffi-buffer-copy (current-buffer)) "to english")))
-                    :buffer panel))
-   "")
- 
-(ffi-add-context-menu-command
-  'search-translate-selection
-  "Translate Selection")
+;; (define-panel-command-global search-translate-selection (&key (selection (ffi-buffer-copy (current-buffer))))
+;;     (panel "*Translate panel*" :right)
+;;   "Open the translation of the selection in a panel buffer."
+;;   (run-thread "search translation URL loader"
+;;     (setf
+;;       (ffi-width panel) (round (/ (ffi-width (current-window)) 2)))
+;;       (sleep 0.3)
+;;       (buffer-load (quri:uri (format nil (nyxt::search-url (nyxt::default-search-engine))
+;;                                      (str:concat "translate " (ffi-buffer-copy (current-buffer)) "to english")))
+;;                     :buffer panel))
+;;    "")
+;;  
+;; (ffi-add-context-menu-command
+;;   'search-translate-selection
+;;   "Translate Selection")

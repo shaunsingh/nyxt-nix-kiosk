@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="150"
+   height="41"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="nyoom-engineering.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   inkscape:export-filename="nyoom-engineering.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.2702339"
+     inkscape:cx="48.314586"
+     inkscape:cy="35.777257"
+     inkscape:window-width="1280"
+     inkscape:window-height="800"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3" />
+  <circle
+     style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:2.92365;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1"
+     id="path8"
+     cx="26.25"
+     cy="20.25"
+     r="18.788176"
+     inkscape:label="path1" />
+  <path
+     d="m 18.193996,6.4779957 c -4.727,2.77 -7.903,7.9100003 -7.887,13.7740003 0.027,8.77 7.18,15.887 15.953,15.863 8.773,-0.023 15.89,-7.18 15.867,-15.953 -0.023,-8.77 -7.183,-15.8870003 -15.953,-15.8630003 -1.04694,0.00494 -2.090895,0.1121154 -3.117,0.32 -0.129,0.031 -0.2,0.164 -0.168,0.29 l 0.55,2.214 c 0.02885,0.1311865 0.159021,0.2137772 0.29,0.184 v 0.003 c 0.808307,-0.1566801 1.629649,-0.23637 2.453,-0.238 7.242,-0.02 13.152,5.8560003 13.172,13.0980003 0.02,7.246 -5.86,13.156 -13.102,13.172 -7.242,0.023 -13.152,-5.856 -13.172,-13.098 -0.011,-4.797 2.563,-9.008 6.407,-11.3080003 0.117132,-0.063994 0.164753,-0.2077285 0.109,-0.329 l -1.07,-2.027 c -0.06367,-0.119657 -0.212131,-0.1652689 -0.332,-0.102"
+     id="path1"
+     sodipodi:nodetypes="cccccccccccccccccc"
+     style="fill:#ff7eb6;fill-opacity:1"
+     inkscape:label="path2" />
+  <path
+     d="m 22.779996,28.579996 -1.082,2.02 c -0.063,0.12 -0.028,0.28 0.101,0.328 a 11.38,11.38 0 0 0 4.32,0.883 c 6.399,0.054 11.645,-5.11 11.7,-11.508 v -0.098 c 0,-6.344 -5.16,-11.5470003 -11.504,-11.6020003 -6.399,-0.05 -11.649,5.1100003 -11.7,11.5080003 l -0.003,0.098 c 0,3.031 1.18,5.797 3.101,7.871 0.09,0.102 0.246,0.121 0.348,0.027 l 1.554,-1.722 c 0.09,-0.102 0.07,-0.254 -0.015,-0.344 l 0.004,-0.004 a 8.77,8.77 0 0 1 -2.219,-5.828 v -0.074 c 0.043,-4.871 4.035,-8.797 8.906,-8.758 4.828,0.039 8.758,4 8.758,8.828 v 0.078 c -0.043,4.867 -4.039,8.797 -8.906,8.754 a 8.775,8.775 0 0 1 -3.031,-0.566 0.257,0.257 0 0 0 -0.332,0.109"
+     id="path2"
+     style="fill:#33b1ff;fill-opacity:1"
+     inkscape:label="path3" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:17.438px;line-height:1;font-family:'SF Pro Display';-inkscape-font-specification:'SF Pro Display, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0;stroke-linecap:square;stroke-dasharray:none"
+     x="51.918636"
+     y="17.286661"
+     id="text5"
+     inkscape:label="text1"><tspan
+       id="tspan5"
+       x="51.918636"
+       y="17.286661"
+       sodipodi:role="line"
+       style="stroke-width:0">Nyoom</tspan><tspan
+       x="51.918636"
+       y="34.724689"
+       sodipodi:role="line"
+       id="tspan8"
+       style="stroke-width:0">Engineering</tspan><tspan
+       x="51.918636"
+       y="52.162724"
+       id="tspan7"
+       sodipodi:role="line"
+       style="stroke-width:0" /></text>
+</svg>

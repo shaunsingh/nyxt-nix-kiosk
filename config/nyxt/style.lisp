@@ -91,33 +91,6 @@
         :background-color ,*base02-*
         :color ,*base06-*)))))
 
-;; status
-(define-configuration :status-buffer
-  ((height 36)
-   (style
-    (theme:themed-css (theme *browser*)
-      `(*
-        :font-family ,*mono*
-        :font-size "11px")
-      `(body
-        :margin "9px"
-        :margin-top "11px"
-        :background-color ,*base02-* 
-        :color ,*base05-*)
-      `("#container"
-        :display "flex"
-        :white-space "nowrap"
-        :overflow "hidden")
-      `("#vi-mode, #buffers, #load, #percentage, #url, .tab, #minions, #modes"
-        :padding-left "9px")
-      `("#modes"
-        :color "#a2a9b0")
-      `(button
-        :all "unset")
-      `((:and (:or .button .tab "#url") :hover)
-        :font-weight "bold"
-        :cursor "pointer")))))
-
 ;; prompt
 (define-configuration :prompt-buffer
   ((style
@@ -274,29 +247,3 @@
               `("a.button.error"
                 :color ,*base0C-*
                 :border-color ,*base0C-*))))))
-
-;; repl
-(define-configuration nyxt/mode/repl:repl-mode
-  ((style (str:concat
-            %slot-value%
-            (theme:themed-css (theme *browser*)
-              `(".input-area"
-                :background-color ,*base02-*)
-              `("#cells"
-                :overflow "clip")
-              `("code"
-                :font-family ,*font*
-                :font-size "18px"
-                :background "transparent"
-                :color ,*base05-*
-                :margin "9px")
-              `("textarea"
-                :background-color ,*base01-*
-                :color ,*base05-*
-                :padding "9px"
-                :padding-top "6px"
-                :padding-bottom "12px")
-              `(".cell-actions"
-                :margin-left "13px")
-              `("code, textarea, .cell-actions"
-                :margin "9px 9px 0px 9px"))))))
