@@ -20,6 +20,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-YBXJA+B3NNp1gAKTP61gmi//gSxV65TMHQQ+qaxf+58=";
   };
 
+  patches = [
+    ../patches/wetty-background.patch
+    ../patches/wetty-oxocarbon.patch
+    ../patches/wetty-padding.patch
+  ];
+
   nativeBuildInputs = [
     nodejs_22
     node-gyp
@@ -37,10 +43,6 @@ stdenv.mkDerivation rec {
   postPatch = ''
     # no git so no need for husky
     substituteInPlace package.json --replace '"prepare": "husky install"' '"prepare": "echo Skipping husky install"'
-
-    # fix build
-    substituteInPlace src/client/wetty/socket.ts --replace 'export const socket = io(' 'import { Socket } from "socket.io-client";
-export const socket: Socket = io('
   '';
 
   configurePhase = ''
@@ -70,20 +72,18 @@ export const socket: Socket = io('
     done
 
     # replace dart sass with nix package
-    mkdir -p node_modules/.bin
-    ln -sf ${dart-sass}/bin/sass node_modules/.bin/sass
-    ./node_modules/.bin/tsc --outDir build
+    find node_modules/.pnpm/sass-embedded-linux-*/node_modules/sass-embedded-linux-*/dart-sass/src -name dart -print0 | xargs -I {} -0 patchelf --set-interpreter "$(<$NIX_CC/nix-support/dynamic-linker)" {}
+
+    pnpm build
 
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
-    mkdir -p $out/lib/node_modules/wetty
     mkdir -p $out/bin
+    mkdir -p $out/lib/node_modules/wetty
     cp -r build package.json node_modules $out/lib/node_modules/wetty/
-    mkdir -p $out/lib/node_modules/wetty/build/client
-    cp -a src/assets/. $out/lib/node_modules/wetty/build/client/
     makeWrapper ${nodejs_22}/bin/node $out/bin/wetty --add-flags "$out/lib/node_modules/wetty/build/main.js"
     runHook postInstall
   '';

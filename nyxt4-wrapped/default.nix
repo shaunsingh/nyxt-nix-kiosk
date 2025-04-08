@@ -144,6 +144,21 @@ in {
 #       };
 #     };
 
+    # terminal in web
+    systemd.user.services.wetty = {
+      description = "Wetty Web Server Daemon";
+
+      wantedBy = [ "multi-user.target" ];
+      requires = [ "sshd.service" ];
+      after = [ "sshd.service" ];
+
+      serviceConfig = {
+        Type = "forking";
+        ExecStart = "${wetty}";
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+      };
+    };
+
     # wpa_supplicant + wpa3 doesn't work on broadcom
     networking.networkmanager.enable = true;
   };
