@@ -2,6 +2,8 @@
 , stdenv
 , fetchFromGitHub
 , nodejs_23
+, node-gyp
+, python3
 , pnpm_9
 , makeWrapper
 , dart-sass
@@ -20,6 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     nodejs_23
+    node-gyp
+    python3
     pnpm_9.configHook
     makeWrapper
     dart-sass
@@ -45,44 +49,48 @@ export const socket: Socket = io('
 
   configurePhase = ''
     runHook preConfigure
-
-    # Set a temporary HOME to avoid permission issues with pnpm.
-    export HOME=$TMPDIR/fake-home
-    mkdir -p "$HOME"
-
+    export HOME=$(mktemp -d)
     pnpm config set node-linker hoisted
-
     runHook postConfigure
   '';
 
   buildPhase = ''
     runHook preBuild
 
+    # Ensure that native modules are built from source.
+    export npm_config_build_from_source=true
+
+    # Perform an offline pnpm install.
     pnpm install --offline
 
-    # Link dart-sass binary so that SCSS processing works.
+    # Force rebuild the gc-stats native binding:
+    # For each gc-stats package directory under the pnpm store, remove its build folder
+    # (removing any prebuilt binary) and then run node-gyp rebuild.
+    find node_modules/.pnpm -maxdepth 3 -type d -name "gc-stats" | while read -r dir; do
+      echo "Forcing rebuild of gc-stats in $dir"
+      rm -rf "$dir/build"
+      (cd "$dir" && node-gyp rebuild)
+    done
+
+    # Link the dart-sass binary so that SCSS processing works.
     mkdir -p node_modules/.bin
     ln -sf ${dart-sass}/bin/sass node_modules/.bin/sass
 
-    # Compile TypeScript forcing the output into "dist".
+    # Compile TypeScript, forcing the output into the "dist" directory.
     ./node_modules/.bin/tsc --outDir dist
-
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
-
     mkdir -p $out/lib/node_modules/wetty
     mkdir -p $out/bin
 
-    # Copy the compiled output ("dist"), package.json, and node_modules.
     cp -r dist package.json node_modules $out/lib/node_modules/wetty/
 
-    # Create a wrapper script to run the wetty server (entry point: dist/main.js).
+    # Create a wrapper script to run the wetty server.
     makeWrapper ${nodejs_23}/bin/node $out/bin/wetty \
       --add-flags "$out/lib/node_modules/wetty/dist/main.js"
-
     runHook postInstall
   '';
 

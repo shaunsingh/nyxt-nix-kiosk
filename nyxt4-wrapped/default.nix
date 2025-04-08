@@ -9,7 +9,7 @@
   sf-mono-liga-bin = pkgs.callPackage ./derivations/sf-mono-liga-bin.nix {};
   # nyxt4-electron = pkgs.callPackage ./nyxt.nix {};
   # shellinabox = pkgs.callPackage ./derivations/shellinabox.nix {};
-  # wetty = pkgs.callPackage ./derivations/wetty.nix {};
+  wetty = pkgs.callPackage ./derivations/wetty.nix {};
 
   # enable DRM support on webkit
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
@@ -90,7 +90,7 @@ in {
       bluez-experimental
       tor
       gtk3
-      # wetty
+      wetty
 
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
