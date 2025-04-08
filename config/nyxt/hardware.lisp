@@ -15,7 +15,7 @@
      (lambda (line) 
        (str:words line))
      (rest (str:lines (uiop:run-program "nmcli device status" :output :string)))))))
-
+ 
 (defun get-available-networks (device)
   #+linux
   "Retrieve available networks for a given WiFi device using nmcli."
@@ -24,23 +24,18 @@
             (format nil "nmcli -f SSID,BSSID device wifi list ifname ~A" device) 
             :output :string))
          (lines (rest (str:lines wifi-list-output))))
-    (let ((seen '()))
-      (mapcar
-       (lambda (line)
-         (let ((parts (str:words line)))
-           (let ((ssid (first parts)))
-             (unless (or (null ssid) 
-                         (string= ssid "") 
-                         (string= (str:trim ssid) "--") 
-                         (member ssid seen :test 'string=))
-               (push ssid seen)
-               ssid))))
-       (remove-if
-        (lambda (line)
-          (or (null line)
-              (string= line "")
-              (string= (str:trim line) "SSID")))
-        lines)))))
+    (mapcar 
+     (lambda (line)
+       (let ((parts (str:words line)))
+         (or 
+          (and parts (first parts))
+          "")))
+     (remove-if 
+      (lambda (line) 
+        (or (null line) 
+            (string= line "") 
+            (string= (str:trim line) "SSID")))
+      lines))))
 
 (defun prompt-wifi-device ()
   #+linux

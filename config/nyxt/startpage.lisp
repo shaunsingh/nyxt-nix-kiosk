@@ -2,9 +2,9 @@
 
 ;;; STARTPAGE
 
-(defvar *logo-svg* 
+(defvar *logo-png* 
   (alexandria:read-file-into-string 
-   (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
+   (merge-pathnames #p".config/nyxt/nyoom-engineering.png" 
                     (user-homedir-pathname))))
 
 (defun sort-by-time (sequence &key (key #'last-access))
@@ -246,12 +246,12 @@
      (spinneret:with-html-string
        (:nstyle dashboard-style)
        (:div :id "container"
-         ;;(:div :id "logo-container"
-         ;;  (:raw *logo-svg*))
+         (:div :id "logo-container"
+           (:raw *logo-png*))
          (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
          (:div :id "buttons"
-          ;;(:nbutton :text "Repl"
-           ;;'(nyxt/mode/repl:repl))
+          (:nbutton :text "Repl"
+           '(nyxt/mode/repl:repl))
           (:nbutton :text "Manual"
            '(make-buffer-focus :url (nyxt-url 'manual)))
           (:nbutton :text "Changelog"

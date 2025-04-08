@@ -49,5 +49,3 @@
         "CPU: (8) @ 2.064GHz"
         (:br)
         (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))))))
-
-

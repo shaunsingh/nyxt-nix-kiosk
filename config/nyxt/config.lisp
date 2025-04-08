@@ -2,25 +2,6 @@
 
 ;;; this file was created and edited in NYXT with ace-mode
 
-;; util
-
-(defun dot-product-recursive (a b)
-  "Calculate dot product recursively"
-  (if (or (null a) (null b))
-      0
-      (+ (* (first a) (first b))
-         (dot-product-recursive (rest a) (rest b)))))
-
-(defun dot-product (list1 list2)
-  "Calculate dot product iteratively"
-  (let ((sum 0))
-    (loop for x in list1
-          for y in list2
-          do (setf sum (+ sum (* x y))))
-    sum))
-
-;; nyxt
-
 (defvar *buffer-modes*
   '(vi-normal-mode)
  "Modes to enable in buffer by default")
@@ -49,7 +30,6 @@
 
 (define-nyxt-user-system-and-load nyxt-user/extra-config
   :components ("startpage"
-               "commands"
 	       "hardware"
 	       "launcher"
 	       "wayland"
@@ -81,18 +61,3 @@
   ((default-modes `(vi-insert-mode
          ,@%slot-value%))
    (hide-single-source-header-p t)))
-
-;; show startuptime 
-;; (define-configuration browser
-;;   ((before-initialize-hook
-;;     (lambda (browser)
-;;       (setf (gethash 'start-time (session-data browser)) (get-internal-real-time)))))
-;; 
-;;   ((after-initialize-hook
-;;     (lambda (browser)
-;;       (let* ((start-time (gethash 'start-time (session-data browser)))
-;;              (end-time (get-internal-real-time))
-;;              (ticks-per-second internal-time-units-per-second)
-;;              (startup-time (/ (- end-time start-time) ticks-per-second)))
-;;         (echo (format nil "Startup time: ~,3f seconds" startup-time)))))))
-

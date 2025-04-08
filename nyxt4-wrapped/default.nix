@@ -7,7 +7,7 @@
   # needed fonts
   otf-apple = pkgs.callPackage ./otf-apple.nix {};
   sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix {};
-  nyxt4-electron = pkgs.callPackage ./nyxt.nix {};
+  # nyxt4-electron = pkgs.callPackage ./nyxt.nix {};
 
   # enable DRM support
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
@@ -63,11 +63,12 @@ in {
   };
   config = {
     # optional personal config
-    # home-manager.users.nyxtkiosk = import ./home.nix;
+    home-manager.users.nyxtkiosk = import ./home.nix;
 
     environment.defaultPackages = with pkgs; [
       # apps
-      nyxt4-electron
+      # nyxt4-electron
+      nyxt4-prerelease-3
       cage
 
       # tools

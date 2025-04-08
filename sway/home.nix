@@ -5,15 +5,15 @@
   pkgs,
   ...
 }:
+
 /*
 home-manager configuration
 Useful links:
 - Home Manager Manual: https://nix-community.gitlab.io/home-manager/
 - Appendix A. Configuration Options: https://nix-community.gitlab.io/home-manager/options.html
 */
-let
-  eww = inputs.eww.packages.aarch64-linux.eww;
-in {
+
+{
   ### -- home
   home = {
     packages = builtins.attrValues {
@@ -30,6 +30,8 @@ in {
         wl-clipboard
         wlogout
         doublecmd
+        legcord
+        chromium
         ;
     };
 
@@ -40,6 +42,16 @@ in {
 
     stateVersion = "23.05";
   };
+
+  ### - cursor 
+  home.pointerCursor = {
+    enable = true;
+    gtk.enable = true;
+    sway.enable = true;
+    name = "macOS-Monterey";
+    package = pkgs.apple-cursor;
+    size = 64;
+  }; 
 
   ### -- sway
   wayland.windowManager.sway = {
@@ -60,12 +72,6 @@ in {
     '';
     wrapperFeatures.gtk = true;
     config = {
-      startup = [
-        {
-          command = "${eww}/bin/eww open bar && ${eww}/bin/eww open bar2";
-          always = false;
-        }
-      ];
       window = {
         titlebar = true;
         border = 0;
@@ -93,7 +99,6 @@ in {
         };
       };
       bars = lib.mkForce [];
-      gaps.outer = 18;
       defaultWorkspace = "workspace 1";
       keybindings = let
         modifier = "Mod4";
@@ -102,7 +107,7 @@ in {
           concatAttrs
           (map
             (i: {
-              "${modifier}+${toString i}" = "exec 'swaymsg workspace ${toString i} && ${eww}/bin/eww update active-tag=${toString i}'";
+              "${modifier}+${toString i}" = "exec 'swaymsg workspace ${toString i}'";
               "${modifier}+Shift+${toString i}" = "exec 'swaymsg move container to workspace ${toString i}'";
             })
             (lib.range 0 9));
@@ -136,8 +141,6 @@ in {
                   -t 888 \
                   -u low
           fi
-
-          ${eww}/bin/eww update volume-level=$volume
         '';
         microphone = pkgs.writeShellScriptBin "microphone" ''
           #!/bin/sh
@@ -173,14 +176,11 @@ in {
                 -h int:value:"$brightness" \
                 -t 888 \
                 -u low
-
-            ${eww}/bin/eww update brightness-level=$brightness
           '';
       in
         tagBinds
         // {
           "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
-          # "${modifier}+d" = "exec ${pkgs.kickoff}/bin/kickoff";
           # "${modifier}+p" = "exec ${screenshot}/bin/screenshot";
           "${modifier}+p" = "exec ${pkgs.grim}/bin/grim";
           "${modifier}+Shift+p" = "exec ${ocrScript}/bin/wl-ocr";
@@ -248,73 +248,40 @@ in {
       default_border none
       default_floating_border none
 
-      # gestures
-      bindgesture swipe:3:right workspace prev
-      bindgesture swipe:3:left workspace next
-      
+      bindgesture swipe:3:right workspace next
+      bindgesture swipe:3:left workspace prev
+
       # swayfx
       # shadows enable
     '';
   };
   services.kanshi.systemdTarget = "sway-session.target";
 
-  ### -- launcher
-  #   programs.kickoff = {
-  #     enable = true;
-  #     settings = {
-  #       prompt = "λ  ";
-  #       padding = 54;
-  #       fonts = [ "Liga SFMono Nerd Font" ];
-  #       font_size = 21.0;
-  #       colors = {
-  #         background = "#000000FF";
-  #         prompt = "#ff7eb6FF";
-  #         text = "#dde1e6FF";
-  #         text_query = "#ffffffFF";
-  #         text_selected = "#3ddbd9FF";
-  #       };
-  #     };
-  #   };
-
   ### -- display
   services.kanshi = {
     enable = true;
-    profiles = {
-      undocked = {
-        outputs = [
-          {
-            criteria = "eDP-1";
-            scale = 2.0;
-          }
-        ];
-      };
-    };
-  };
-
-  ### -- cursor
-  home.pointerCursor = {
-    name = "phinger-cursors";
-    package = pkgs.phinger-cursors;
-  };
-  gtk = {
-    cursorTheme = {
-      name = "phinger-cursors";
-      package = pkgs.phinger-cursors;
-    };
-    gtk3.extraConfig = {
-      Settings = ''
-        gtk-application-prefer-dark-theme=1
-      '';
-    };
-    gtk4.extraConfig = {
-      Settings = ''
-        gtk-application-prefer-dark-theme=1
-      '';
-    };
-  };
-  home.sessionVariables = {
-    XCURSOR_THEME = "phinger-cursors";
-    # XCURSOR_SIZE = "32";
+    settings = [
+      {
+        profile = {
+          name = "undocked";
+          outputs = [
+            {
+              criteria = "eDP-1";
+              status = "enable";
+              scale = 2.0; 
+            }
+            {
+              criteria = "$middleLG34";
+              status = "enable";
+            }
+            {
+              criteria = "$rightLG27";
+              status = "enable";
+            }
+          ];
+        };
+      }
+    ];
   };
 
   ### -- terminal
@@ -325,7 +292,6 @@ in {
         font = "Liga SFMono Nerd Font:size=11";
         pad = "27x27";
         dpi-aware = "no";
-        notify = "${pkgs.libnotify}/bin/notify-send -a foot -i foot \${title} \${body}";
       };
       mouse.hide-when-typing = "yes";
       scrollback.lines = 32768;
@@ -360,17 +326,14 @@ in {
     enable = true;
     settings = {
       global = {
-        # gen settings
         follow = "mouse";
         width = 300;
         origin = "top-left";
         notification_limit = 0;
         offset = "18x18";
         icon_position = "off";
-        # progress
         progress_bar_height = 9;
         progress_bar_frame_width = 0;
-        # other gen
         padding = 18;
         horizontal_padding = 18;
         frame_width = 0;
@@ -385,10 +348,6 @@ in {
         markup = "full";
       };
 
-      # disable notifs in fullscreen
-      fullscreen_delay_everything = {fullscreen = "delay";};
-
-      # colors
       urgency_low = {
         timeout = 3;
         background = "#131313";
@@ -409,239 +368,8 @@ in {
       };
     };
   };
-  services.poweralertd.enable = true;
 
-  ### -- bar
-  programs.eww = {
-    enable = true;
-    configDir = let
-      ewwYuck = pkgs.writeText "eww.yuck" ''
-        (defwidget bar []
-          (centerbox :orientation "v"
-                     :halign "center"
-            (box :class "segment-top"
-                 :valign "start"
-                 :orientation "v"
-              (tags))
-            (box :class "segment-center"
-                 :valign "center"
-                 :orientation "v"
-              (time)
-              (date))
-            (box :class "segment-bottom"
-                 :valign "end"
-                 :orientation "v"
-              (menu)
-              (brightness)
-              (volume)
-              (battery)
-              (current-tag))))
-
-        (defwidget time []
-          (box :class "time"
-               :orientation "v"
-            hour min type))
-
-        (defwidget date []
-          (box :class "date"
-               :orientation "v"
-            year month day))
-
-        (defwidget menu []
-          (button :class "icon"
-                  :orientation "v"
-                  :onclick "''${EWW_CMD} open --toggle notifications-menu"
-             ""))
-
-        (defwidget brightness []
-          (button :class "icon"
-                  :orientation "v"
-            (circular-progress :value brightness-level
-                               :thickness 3)))
-
-        (defwidget volume []
-          (button :class "icon"
-                  :orientation "v"
-            (circular-progress :value volume-level
-                               :thickness 3)))
-
-        (defwidget battery []
-          (button :class "icon"
-                  :orientation "v"
-                  :onclick ""
-            (circular-progress :value "''${EWW_BATTERY['macsmc-battery'].capacity}"
-                               :thickness 3)))
-
-        (defwidget current-tag []
-          (button :class "current-tag"
-                  :orientation "v"
-                  :onclick "kickoff & disown"
-            "''${active-tag}"))
-
-        (defvar active-tag "1")
-        (defpoll hour :interval "1m" "date +%I")
-        (defpoll min  :interval "1m" "date +%M")
-        (defpoll type :interval "1m" "date +%p")
-
-        (defpoll day   :interval "10m" "date +%d")
-        (defpoll month :interval "1h"  "date +%m")
-        (defpoll year  :interval "1h"  "date +%y")
-
-        ;; this is updated by the helper script
-        (defvar brightness-level 66)
-        (defvar volume-level 33)
-
-        ;; sway
-        (defwidget tags []
-          (box :class "tags"
-               :orientation "v"
-               :halign "center"
-            (for tag in tags
-              (box :class {active-tag == tag.tag ? "active" : "inactive"}
-                (button :onclick "swaymsg workspace ''${tag.tag} ; ''${EWW_CMD} update active-tag=''${tag.tag}"
-                  "''${tag.label}")))))
-
-        (defvar tags '[{ "tag": 1, "label": "一" },
-                       { "tag": 2, "label": "二" },
-                       { "tag": 3, "label": "三" },
-                       { "tag": 4, "label": "四" },
-                       { "tag": 5, "label": "五" },
-                       { "tag": 6, "label": "六" },
-                       { "tag": 7, "label": "七" },
-                       { "tag": 8, "label": "八" },
-                       { "tag": 9, "label": "九" },
-                       { "tag": 0, "label": "" }]')
-
-        (defwindow bar
-          :monitor 0
-          :stacking "bottom"
-          :geometry (geometry
-                      :height "100%"
-                      :anchor "left center")
-          :exclusive true
-          (bar))
-
-        (defwindow bar2
-          :monitor 1
-          :stacking "bottom"
-          :geometry (geometry
-                      :height "100%"
-                      :anchor "left center")
-          :exclusive true
-          (bar))
-      '';
-
-      ewwScss = pkgs.writeText "eww.scss" ''
-        $baseTR: rgba(13,13,13,0.13);
-        $base00: #131313;
-        $base01: #262626;
-        $base02: #393939;
-        $base03: #525252;
-        $base04: #dde1e6;
-        $base05: #f2f4f8;
-        $base06: #ffffff;
-        $base07: #08bdba;
-        $base08: #3ddbd9;
-        $base09: #33b1ff;
-        $base0A: #ee5396;
-        $base0B: #78a9ff;
-        $base0C: #ff7eb6;
-        $base0D: #42be65;
-        $base0E: #be95ff;
-        $base0F: #82cfff;
-        $baseIBM: #0f62fe;
-
-        * {
-          all: unset;
-        }
-
-        window {
-          font-family: "Liga SFMono Nerd Font";
-          font-size: 13px;
-          background-color: rgba(0,0,0,0);
-          color: $base04;
-          & > * {
-            margin: 0px 0px 12px 12px;
-          }
-        }
-
-        .tags {
-          margin-top: 9px;
-        }
-
-        .active {
-          color: $base06;
-          padding: 6px 9px 6px 6px;
-          background-color: $baseTR;
-          border-left: 3px solid $base0C;
-        }
-
-        .segment-center {
-          margin-top: 18px;
-          padding: 9px;
-        }
-
-        .time {
-          color: $base06;
-          font-weight: bold;
-          margin-bottom: 6px;
-        }
-
-        .date {
-          margin-top: 6px;
-        }
-
-        .icon {
-          background-color: $base01;
-          padding: 9px;
-          margin: 4.5px 0px;
-          border-radius: 3px;
-        }
-
-        .current-tag {
-          color: $base00;
-          background-color: $base0E;
-          padding: 9px;
-          margin: 4.5px 0px;
-          border-radius: 3px;
-        }
-      '';
-
-      ewwConf = pkgs.linkFarm "ewwConf" [
-        {
-          name = "eww.scss";
-          path = ewwScss;
-        }
-        {
-          name = "eww.yuck";
-          path = ewwYuck;
-        }
-      ];
-    in
-      ewwConf;
-  };
-  systemd.user.services.eww = {
-    Unit = {
-      Description = "Eww daemon";
-      PartOf = ["graphical-session.target"];
-    };
-    Service = {
-      Environment = let
-        dependencies = with pkgs; [
-          #kickoff
-          brightnessctl
-          pamixer
-          coreutils
-          sway
-        ];
-      in "PATH=/run/wrappers/bin:${lib.makeBinPath dependencies}";
-      ExecStart = "${config.programs.eww.package}/bin/eww daemon --no-daemonize";
-      Restart = "on-failure";
-    };
-    Install.WantedBy = ["graphical-session.target"];
-  };
-
-  ### -- sleep
+  ### -- swayidle
   services.swayidle = let
     display = status: "swaymsg 'output * power ${status}'";
   in {

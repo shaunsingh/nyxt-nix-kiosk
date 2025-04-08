@@ -62,12 +62,6 @@
        ,@(when documentation
            `((setf (documentation (quote ,name) 'function) ,documentation))))))
 
-(defmacro define-derived-search-engine (name (parent-engine &rest arguments) &optional documentation)
-  `(progn
-     (defun ,name (&rest args)
-       ,documentation
-       (apply (function ,parent-engine) (append args (list ,@arguments))))))
-
 (defun make-google-completion (&key request-args)
   (make-search-completion-function
    :base-url "https://www.google.com/complete/search?q=~a&client=gws-wiz"
@@ -471,19 +465,6 @@ DATE-RESULTS -- Filter results by a specified date range.")
                           (:past-month "m")
                           (:past-year "y"))))
 
-(define-derived-search-engine google-images
-    (google :object :image))
-(define-derived-search-engine google-videos
-    (google :object :video))
-(define-derived-search-engine google-news
-    (google :object :news))
-(define-derived-search-engine google-shopping
-    (google :object :shopping))
-(define-derived-search-engine google-reading
-    (google :object :books))
-(define-derived-search-engine google-finance
-    (google :object :finance))
-
 (define-search-engine google-1998
     (:shortcut "g98"
      :base-search-url "https://oldgoogle.neocities.org/search-1998.html?q=hi&num=10#gsc.tab=0&gsc.q=~a"
@@ -724,13 +705,20 @@ advanced search filters for more precise searches.")
 
 (define-configuration context-buffer
   ((search-engines (list ;; derived
-                         (google-images)
-                         (google-videos)
-                         (google-news)
-                         (google-shopping)
-                         (google-reading)
-                         (google-finance)
-                         (google-scholar)
+		         (google :shortcut "gmaps"
+                                 :object :maps)
+		         (google :shortcut "image"
+                                 :object :image)
+		         (google :shortcut "yt"
+                                 :object :video)
+		         (google :shortcut "news"
+                                 :object :news)
+		         (google :shortcut "shopping"
+                                 :object :shopping)
+		         (google :shortcut "books"
+                                 :object :books)
+		         (google :shortcut "finance"
+                                 :object :finance)
                          ;; old
                          (google-1998)
                          (google-2009)

@@ -74,6 +74,10 @@
     supportedLocales = ["en_US.UTF-8/UTF-8"];
   };
 
+  # cursor
+  environment.variables.XCURSOR_SIZE = "64";
+
+  # nix
   networking.hostName = "nyxtkiosk";
   system.stateVersion = "23.05";
 }

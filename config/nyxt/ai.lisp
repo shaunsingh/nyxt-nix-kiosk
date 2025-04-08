@@ -6,6 +6,21 @@
 (defvar *model* "gpt-4o-mini")
 (defvar *available-functions* (make-hash-table :test 'equal))
 
+(defun dot-product-recursive (a b)
+  "Calculate dot product recursively"
+  (if (or (null a) (null b))
+      0
+      (+ (* (first a) (first b))
+         (dot-product-recursive (rest a) (rest b)))))
+
+(defun dot-product (list1 list2)
+  "Calculate dot product iteratively"
+  (let ((sum 0))
+    (loop for x in list1
+          for y in list2
+          do (setf sum (+ sum (* x y))))
+    sum))
+
 (defun get-api-key ()
   "Retrieve the OpenAI API key from the environment variable."
   (or (uiop:getenv "OPENAI_KEY")
@@ -148,6 +163,32 @@ MAX-TOKENS must be a number."
                                                      (cons :description "The city name")))))
        (cons :required '("location")))
  #'nyxt-user::get_weather)
+
+;; GROQ
+
+(defun groq-completion (content)
+  (let* ((url "https://api.groq.com/openai/v1/chat/completions")
+         (groq-api-key (uiop:getenv "GROQ_API_KEY"))
+         (headers `(("Authorization" . ,(concatenate 'string "Bearer " groq-api-key))
+                    ("Content-Type" . "application/json")))
+         (data `(("model" . "meta-llama/llama-4-scout-17b-16e-instruct")
+		 ("messages" . ((("role" . "system")
+				 ("content" . "content"))
+                                (("role" . "user")
+				 ("content" . ,content))))))
+         (json-data (cl-json:encode-json-to-string data)))
+    (cl-json:decode-json-from-string
+     (flexi-streams:octets-to-string
+      (drakma:http-request url
+                           :method :post
+                           :content-type "application/json"
+                           :additional-headers headers
+                           :content json-data)))))
+
+(defun groq-extract-content (resp)
+  (cdr (nth 2 (cadr (cadr (assoc :choices resp))))))
+
+;; IMPLEMENT
 
 (define-command-global ai-ask-question ()
   "Ask a question to the AI assistant and display the answer."
