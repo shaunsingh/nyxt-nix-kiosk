@@ -35,8 +35,8 @@ let
   srcPatched = applyPatches {
     inherit src;
     patches = [
-      ./electron-builder.patch
-      ./electron-core.patch
+      ../patches/electron-builder.patch
+      ../patches/electron-core.patch
     ];
   };
 

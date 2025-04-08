@@ -5,11 +5,13 @@
   ...
 }: let
   # needed fonts
-  otf-apple = pkgs.callPackage ./otf-apple.nix {};
-  sf-mono-liga-bin = pkgs.callPackage ./sf-mono-liga-bin.nix {};
+  otf-apple = pkgs.callPackage ./derivations/otf-apple.nix {};
+  sf-mono-liga-bin = pkgs.callPackage ./derivations/sf-mono-liga-bin.nix {};
   # nyxt4-electron = pkgs.callPackage ./nyxt.nix {};
+  # shellinabox = pkgs.callPackage ./derivations/shellinabox.nix {};
+  # wetty = pkgs.callPackage ./derivations/wetty.nix {};
 
-  # enable DRM support
+  # enable DRM support on webkit
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
     #     buildInputs =
     #       oldAttrs.buildInputs
@@ -46,6 +48,12 @@
         webkitgtk-eme
       ];
   });
+
+  # command to start shellinaboxd
+  # fd = "3";
+  # createFd = "${fd}<${../certificates/certificate.pem}";
+  # sbx-args = [ "--background" "--disable-ssl" ]; # version of ssl is outdated/insecure anyways
+  # sbx-cmd = "${shellinabox}/bin/shellinaboxd ${lib.concatStringsSep " " sbx-args}";
 in {
   options.nyxt4-wrapped = {
     display = lib.mkOption {
@@ -82,6 +90,7 @@ in {
       bluez-experimental
       tor
       gtk3
+      # wetty
 
       # wrapped
       (pkgs.writeShellScriptBin "nyxt-gamescope" ''
@@ -114,6 +123,26 @@ in {
       enable = true;
       capSysNice = true;
     };
+
+#     # old openssl is insecure
+#     nixpkgs.config.permittedInsecurePackages = [
+#       "openssl-1.0.2u"
+#     ];
+# 
+#     # terminal in web
+#     systemd.user.services.shellinaboxd = {
+#       description = "Shellinabox Web Server Daemon";
+# 
+#       wantedBy = [ "multi-user.target" ];
+#       requires = [ "sshd.service" ];
+#       after = [ "sshd.service" ];
+# 
+#       serviceConfig = {
+#         Type = "forking";
+#         ExecStart = "${sbx-cmd}";
+#         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+#       };
+#     };
 
     # wpa_supplicant + wpa3 doesn't work on broadcom
     networking.networkmanager.enable = true;

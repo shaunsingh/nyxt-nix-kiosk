@@ -2,9 +2,9 @@
 
 ;;; STARTPAGE
 
-(defvar *logo-png* 
+(defvar *logo-svg* 
   (alexandria:read-file-into-string 
-   (merge-pathnames #p".config/nyxt/nyoom-engineering.png" 
+   (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
                     (user-homedir-pathname))))
 
 (defun sort-by-time (sequence &key (key #'last-access))
@@ -247,7 +247,7 @@
        (:nstyle dashboard-style)
        (:div :id "container"
          (:div :id "logo-container"
-           (:raw *logo-png*))
+           (:raw *logo-svg*))
          (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
          (:div :id "buttons"
           (:nbutton :text "Repl"

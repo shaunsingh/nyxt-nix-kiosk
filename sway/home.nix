@@ -32,6 +32,7 @@ Useful links:
         doublecmd
         legcord
         chromium
+        gh
         ;
     };
 
