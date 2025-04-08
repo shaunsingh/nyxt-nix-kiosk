@@ -35,13 +35,13 @@
 	       "wayland"
 	       "zola"
                "tor"
+	       "term"
                "mpv"
                "ace"
                "repl"
                "ai"
                "search-engines"
-               "fetch"
-	       ))
+               "fetch"))
 
 ;;(defmethod files:resolve ((profile nyxt:nyxt-profile) (file nyxt/bookmark-mode:bookmarks-file))
 ;;  #p"bookmarks.lisp")
