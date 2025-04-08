@@ -30,12 +30,13 @@
 
 (define-nyxt-user-system-and-load nyxt-user/extra-config
   :components ("startpage"
+	       "commands"
 	       "hardware"
 	       "launcher"
 	       "wayland"
 	       "zola"
                "tor"
-	       "term"
+	       ;;"term"
                "mpv"
                "ace"
                "repl"

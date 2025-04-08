@@ -2,10 +2,10 @@
 
 ;;; STARTPAGE
 
-(defvar *logo-svg* 
-  (alexandria:read-file-into-string 
-   (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
-                    (user-homedir-pathname))))
+;; (defvar *logo-svg* 
+;;   (alexandria:read-file-into-string 
+;;    (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
+;;                     (user-homedir-pathname))))
 
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
@@ -246,8 +246,8 @@
      (spinneret:with-html-string
        (:nstyle dashboard-style)
        (:div :id "container"
-         (:div :id "logo-container"
-           (:raw *logo-svg*))
+         ;; (:div :id "logo-container"
+         ;;   (:raw *logo-svg*))
          (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
          (:div :id "buttons"
           (:nbutton :text "Repl"

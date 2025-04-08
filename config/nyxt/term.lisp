@@ -2,7 +2,7 @@
 
 ;;; provide interaction with xterm.js
 
-(define-mode xterm-mode (nyxt/mode/passthrough:pasthrough-mode)
+(define-mode xterm-mode (nyxt/mode/passthrough:passthrough-mode)
   "Launch tor & set proxy to local Tor SOCKS5 proxy."
   ((uiop:launch-program "sudo wetty")))
 
