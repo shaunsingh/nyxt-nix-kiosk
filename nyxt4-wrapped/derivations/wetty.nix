@@ -58,12 +58,13 @@ export const socket: Socket = io('
   buildPhase = ''
     runHook preBuild
 
-    pnpm install --offline --frozen-lockfile
+    pnpm install --offline
 
     # Link dart-sass binary so that SCSS processing works.
     mkdir -p node_modules/.bin
     ln -sf ${dart-sass}/bin/sass node_modules/.bin/sass
 
+    # Compile TypeScript forcing the output into "dist".
     ./node_modules/.bin/tsc --outDir dist
 
     runHook postBuild
@@ -75,10 +76,10 @@ export const socket: Socket = io('
     mkdir -p $out/lib/node_modules/wetty
     mkdir -p $out/bin
 
-    # Copy the compiled output ("dist"), package.json, and node_modules for runtime.
+    # Copy the compiled output ("dist"), package.json, and node_modules.
     cp -r dist package.json node_modules $out/lib/node_modules/wetty/
 
-    # Create a wrapper script to run the wetty server
+    # Create a wrapper script to run the wetty server (entry point: dist/main.js).
     makeWrapper ${nodejs_23}/bin/node $out/bin/wetty \
       --add-flags "$out/lib/node_modules/wetty/dist/main.js"
 
