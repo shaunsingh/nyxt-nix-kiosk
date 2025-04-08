@@ -1,15 +1,15 @@
 { lib
 , stdenv
 , fetchFromGitHub
-, nodejs_23
+, python310
+, nodejs_22
 , node-gyp
-, python3
 , pnpm_9
 , makeWrapper
 , dart-sass
 }:
 
-stdenv.mkDerivation (finalAttrs: {
+stdenv.mkDerivation rec {
   pname = "wetty";
   version = "2.7.0";
 
@@ -21,63 +21,59 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [
-    nodejs_23
+    nodejs_22
     node-gyp
-    python3
+    python310
     pnpm_9.configHook
     makeWrapper
     dart-sass
   ];
 
   pnpmDeps = pnpm_9.fetchDeps {
-    inherit (finalAttrs) pname version src;
+    inherit pname version src;
     hash = "sha256-zGJAXziQglF84nmmZ4a1+6MAqDHelPFFTpl5G6vdyiU=";
   };
 
   postPatch = ''
-    # Skip husky prepare script.
-    substituteInPlace package.json \
-      --replace '"prepare": "husky install"' \
-                '"prepare": "echo Skipping husky install"'
+    # no git so no need for husky
+    substituteInPlace package.json --replace '"prepare": "husky install"' '"prepare": "echo Skipping husky install"'
 
-    # Patch socket.ts to avoid TS2742 (due to inferred Socket type).
-    substituteInPlace src/client/wetty/socket.ts \
-      --replace 'export const socket = io(' \
-                'import { Socket } from "socket.io-client";
+    # fix build
+    substituteInPlace src/client/wetty/socket.ts --replace 'export const socket = io(' 'import { Socket } from "socket.io-client";
 export const socket: Socket = io('
   '';
 
   configurePhase = ''
     runHook preConfigure
+
+    # fake home to sandbox
     export HOME=$(mktemp -d)
     pnpm config set node-linker hoisted
+
     runHook postConfigure
   '';
 
   buildPhase = ''
     runHook preBuild
 
-    # Ensure that native modules are built from source.
     export npm_config_build_from_source=true
-
-    # Perform an offline pnpm install.
     pnpm install --offline
 
-    # Force rebuild the gc-stats native binding:
-    # For each gc-stats package directory under the pnpm store, remove its build folder
-    # (removing any prebuilt binary) and then run node-gyp rebuild.
-    find node_modules/.pnpm -maxdepth 3 -type d -name "gc-stats" | while read -r dir; do
-      echo "Forcing rebuild of gc-stats in $dir"
-      rm -rf "$dir/build"
+    # rebuild native modules
+    find node_modules/.pnpm -maxdepth 3 -type d -name gc-stats | while read -r dir; do
+      echo "Rebuilding native module in $dir"
+      (cd "$dir" && node-gyp rebuild)
+    done
+    find node_modules/.pnpm -maxdepth 3 -type d -name node-pty | while read -r dir; do
+      echo "Rebuilding node-pty native module in $dir"
       (cd "$dir" && node-gyp rebuild)
     done
 
-    # Link the dart-sass binary so that SCSS processing works.
+    # replace dart sass with nix package
     mkdir -p node_modules/.bin
     ln -sf ${dart-sass}/bin/sass node_modules/.bin/sass
+    ./node_modules/.bin/tsc --outDir build
 
-    # Compile TypeScript, forcing the output into the "dist" directory.
-    ./node_modules/.bin/tsc --outDir dist
     runHook postBuild
   '';
 
@@ -85,12 +81,10 @@ export const socket: Socket = io('
     runHook preInstall
     mkdir -p $out/lib/node_modules/wetty
     mkdir -p $out/bin
-
-    cp -r dist package.json node_modules $out/lib/node_modules/wetty/
-
-    # Create a wrapper script to run the wetty server.
-    makeWrapper ${nodejs_23}/bin/node $out/bin/wetty \
-      --add-flags "$out/lib/node_modules/wetty/dist/main.js"
+    cp -r build package.json node_modules $out/lib/node_modules/wetty/
+    mkdir -p $out/lib/node_modules/wetty/build/client
+    cp -a src/assets/. $out/lib/node_modules/wetty/build/client/
+    makeWrapper ${nodejs_22}/bin/node $out/bin/wetty --add-flags "$out/lib/node_modules/wetty/build/main.js"
     runHook postInstall
   '';
 
@@ -101,5 +95,5 @@ export const socket: Socket = io('
     mainProgram = "wetty";
     platforms = platforms.unix;
   };
-})
+}
 
