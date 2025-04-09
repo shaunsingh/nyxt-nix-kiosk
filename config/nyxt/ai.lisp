@@ -1,7 +1,6 @@
 (in-package #:nyxt-user)
 
 ;; keys
-
 (defvar *openai-model-host* "https://api.openai.com/v1/chat/completions")
 (defvar *openai-model* "gpt-4o-mini")
 
@@ -47,27 +46,39 @@
       nil)))
 
 (defun json-to-html (json)
-  "Convert structured JSON summary into an inner HTML string using spinneret."
-  (let ((title (cdr (assoc :title json)))
-        (sections (cdr (assoc :sections json)))
-        (html-parts '()))
-    (push (spinneret:with-html-string (:h1 title)) html-parts)
-    (dolist (section sections)
-      (let ((heading (cdr (assoc :heading section)))
-            (content (cdr (assoc :content section)))
-            (items (cdr (assoc :list section))))
-        (when heading
-          (push (spinneret:with-html-string (:h2 heading)) html-parts))
-        (when content
-          (push (spinneret:with-html-string (:p content)) html-parts))
-        (when items
-          (let ((list-html
-                  (spinneret:with-html-string
-                    (:ul
-                      (dolist (item items)
-                        (:li item))))))
-            (push list-html html-parts)))))
-    (apply #'concatenate 'string (nreverse html-parts))))
+  "Convert structured JSON summary into HTML using spinneret.
+   Supports title, subtitle, headings (h1-h5), paragraphs, lists, and code blocks."
+  (spinneret:with-html-string
+    (:h1 (cdr (assoc :title json)))
+    (when (cdr (assoc :subtitle json))
+      (:h2 :class "subtitle" (cdr (assoc :subtitle json))))
+    (loop for section in (cdr (assoc :sections json)) do
+         (let ((heading (cdr (assoc :heading section)))
+               (subheading (cdr (assoc :subheading section)))
+               (content (cdr (assoc :content section)))
+               (list (cdr (assoc :list section)))
+               (code (cdr (assoc :code section)))
+               (heading-level (or (cdr (assoc :heading-level section)) 2)))
+           (when heading
+             (case heading-level
+               (1 (:h1 heading))
+               (2 (:h2 heading))
+               (3 (:h3 heading))
+               (4 (:h4 heading))
+               (5 (:h5 heading))
+               (otherwise (:h2 heading))))
+           (when subheading
+             (:h3 :class "subheading" subheading))
+           (when content
+             (:p content))
+           (when list
+             (:ul (loop for item in list do
+                       (:li item))))
+           (when code
+             (let ((language (cdr (assoc :language code)))
+                   (content (cdr (assoc :content code))))
+               (:pre (:code :class (if language (format nil "language-~A" language) "")
+                            content))))))))
 
 (defun escape-json (str)
   "Escape quotes in a JSON string."
@@ -82,10 +93,13 @@
   "Internal page to test json schema parsing & rendering"
   (let* ((json-string "
 {
-  \"title\": \"test1\",
+  \"title\": \"Enhanced Document Test\",
+  \"subtitle\": \"Testing various formatting features\",
   \"sections\": [
-    {\"heading\": \"test1 heading\", \"content\": \"abasdflkjh\"},
-    {\"heading\": \"test2 list\", \"list\": [\"asdkfljh0\", \"asdlfkjh1\"] }
+    {\"heading\": \"Introduction\", \"heading-level\": 2, \"content\": \"This is a test document with enhanced formatting.\"},
+    {\"heading\": \"Code Example\", \"heading-level\": 3, \"code\": {\"language\": \"lisp\", \"content\": \"(defun hello-world () (format t \\\"Hello, World!\\\"))\"}},
+    {\"heading\": \"List Items\", \"heading-level\": 2, \"subheading\": \"Some important points\", \"list\": [\"First item\", \"Second item\", \"Third item\"]},
+    {\"heading\": \"Deep heading\", \"heading-level\": 4, \"content\": \"This is a level 4 heading with content\"}
   ]
 }
     ")
@@ -93,7 +107,6 @@
          (inner-html (json-to-html parsed-json)))
     (spinneret:with-html-string
       (:div (:raw inner-html)))))
-
 ;; openai
 
 (defstruct openai-function
@@ -270,30 +283,123 @@ This function forces the use of JSON mode via response_format."
 
 (define-internal-page ai-summarize-buffer (&key (id (id (current-buffer))))
     (:title "*AI Summary*")
-  "Summarize the current buffer by creating a new summary buffer with AI using Groq."
+  "Render the current buffer by creating a new buffer with NYXT schema using Groq."
   (let ((buffer (nyxt::buffers-get id)))
     (let* ((contents (serapeum:string-join
                       (map 'list (lambda (e) (plump:text e))
                            (clss:select "p" (document-model buffer)))
                       " "))
            (prompt (format nil
-"Summarize the following content. Summary should be concise, formal, and objective. 
-Use as many headings & lists as needed. The JSON must conform to schema:
+"Summarize the following content using appropriate structure. 
+Create a title (maximum 5 words) that captures the essence of the content.
+Use subtitle, headings, subheadings, paragraphs, lists, and code blocks as appropriate.
+The JSON must conform EXACTLY to this schema:
 {
   \"title\": \"...\",
+  \"subtitle\": \"...\" (optional),
   \"sections\": [
-    {\"heading\": \"...\", \"content\": \"...\"},
-    {\"heading\": \"...\", \"list\": [\"...\", \"...\"] }
+    {
+      \"heading\": \"...\", 
+      \"heading-level\": 2, (number between 1-5, optional, defaults to 2)
+      \"subheading\": \"...\" (optional),
+      \"content\": \"...\" (optional),
+      \"list\": [\"...\", \"...\"] (optional),
+      \"code\": {
+        \"language\": \"...\", (optional, e.g., \"javascript\", \"python\", \"lisp\")
+        \"content\": \"...\"
+      } (optional)
+    }
   ]
 }
 Content:\n~A" contents))
            (raw-response (groq-json-completion prompt))
            (json-string (groq-extract-content raw-response))
-           (parsed-json (safe-parse-json json-string))
-           (inner-html (json-to-html parsed-json)))
-      (spinneret:with-html-string
-        (:div (:raw inner-html))))))
+           (parsed-json (safe-parse-json json-string)))
+      (if parsed-json
+          (spinneret:with-html-string
+            (:div (:raw (json-to-html parsed-json))))
+          (spinneret:with-html-string
+            (:h2 "Failed to parse summary")
+            (:pre json-string))))))
+
+(define-internal-page ai-generate-content (&key (prompt (first (nyxt:prompt
+                                                           :prompt "Enter prompt for content generation:"
+                                                           :sources (make-instance 'prompter:raw-source)))))
+    (:title "*AI Generated Content*")
+  "Generate content based on a user-provided prompt."
+  (let* ((ai-prompt (format nil
+"Generate content based on the following prompt. Be creative, informative, and comprehensive.
+Format the response using the following JSON schema:
+{
+  \"title\": \"...\",
+  \"subtitle\": \"...\" (optional),
+  \"sections\": [
+    {
+      \"heading\": \"...\", 
+      \"heading-level\": 2, (number between 1-5, optional, defaults to 2)
+      \"subheading\": \"...\" (optional),
+      \"content\": \"...\" (optional),
+      \"list\": [\"...\", \"...\"] (optional),
+      \"code\": {
+        \"language\": \"...\", (optional),
+        \"content\": \"...\"
+      } (optional)
+    }
+  ]
+}
+User prompt:\n~A" prompt))
+         (raw-response (groq-json-completion ai-prompt))
+         (json-string (groq-extract-content raw-response))
+         (parsed-json (safe-parse-json json-string)))
+    (if parsed-json
+        (spinneret:with-html-string
+          (:div (:raw (json-to-html parsed-json))))
+        (spinneret:with-html-string
+          (:h2 "Failed to parse content")
+          (:pre json-string)))))
+
+(define-internal-page ai-expand-text (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
+    (:title "*AI Expanded Text*")
+  "Expand on the selected text using AI."
+  (let* ((prompt (format nil
+"Expand on the following text with more details, examples, and elaboration.
+Format the response using the following JSON schema:
+{
+  \"title\": \"...\",
+  \"subtitle\": \"...\" (optional),
+  \"sections\": [
+    {
+      \"heading\": \"...\", 
+      \"heading-level\": 2, (number between 1-5, optional, defaults to 2)
+      \"subheading\": \"...\" (optional),
+      \"content\": \"...\" (optional),
+      \"list\": [\"...\", \"...\"] (optional),
+      \"code\": {
+        \"language\": \"...\", (optional),
+        \"content\": \"...\"
+      } (optional)
+    }
+  ]
+}
+Selected text:\n~A" selection))
+         (raw-response (groq-json-completion prompt))
+         (json-string (groq-extract-content raw-response))
+         (parsed-json (safe-parse-json json-string)))
+    (if parsed-json
+        (spinneret:with-html-string
+          (:div (:raw (json-to-html parsed-json))))
+        (spinneret:with-html-string
+          (:h2 "Failed to parse content")
+          (:pre json-string)))))
 
 (define-command-global ai-summarize-buffer (&key (buffer (current-buffer)))
   "Summarize the current buffer with AI by creating a new summary buffer."
   (buffer-load-internal-page-focus 'ai-summarize-buffer :id (id buffer)))
+
+(define-command-global ai-generate-content ()
+  "Generate content based on a user-provided prompt."
+  (buffer-load-internal-page-focus 'ai-generate-content))
+
+(define-command-global ai-expand-text ()
+  "Expand on the selected text using AI."
+  (buffer-load-internal-page-focus 'ai-expand-text))
