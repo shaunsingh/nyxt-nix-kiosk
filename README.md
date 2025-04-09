@@ -2,7 +2,7 @@
 
 NixOS config to run the [NYXT](https://nyxt.atlas.engineer/) browser standalone under either the kiosk compositor [cage](https://github.com/cage-kiosk/cage) or Valve's gaming-oriented microcompositor [gamescope](https://github.com/ValveSoftware/gamescope)
 
-<img src="assets/showcase.png">
+<img src="assets/showcase.png" width="350">
 
 ## Notes
 
