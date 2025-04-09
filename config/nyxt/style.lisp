@@ -48,11 +48,11 @@
         :color ,*base0C-*)
       `("h1, #subtitle"
         :font-size "63px"
-        :margin-bottom "-9px")
+        :margin-bottom "-3px")
       `("h2"
         :font-size "27px"
         :margin "0"
-        :margin-bottom "-9px"
+        :margin-bottom "-3px"
         :color ,*base0C-*)
       `("h3"
         :font-size "18px"

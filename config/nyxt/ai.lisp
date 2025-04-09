@@ -1,6 +1,7 @@
 (in-package #:nyxt-user)
 
 ;; keys
+
 (defvar *openai-model-host* "https://api.openai.com/v1/chat/completions")
 (defvar *openai-model* "gpt-4o-mini")
 
@@ -281,6 +282,20 @@ This function forces the use of JSON mode via response_format."
                      (openai-completions question 100))))
     (echo "~A" result)))
 
+(define-command-global ai-ask-question-context (&key (selection (ffi-buffer-copy (current-buffer))))
+  "Ask a question to the AI assistant with selection as context and display the answer."
+  (when (string= selection "")
+    (error "No text selected"))
+  (let* ((question (format nil "Context: ~A Question: ~A"
+			   selection
+                           (first (prompt :prompt "Ask AI With Context: "
+                                          :sources (make-instance 'prompter:raw-source)))))
+         (api (choose-ai-api))
+         (result (if (string= api "Groq")
+                     (groq-extract-content (groq-completion question))
+                     (openai-completions question 100))))
+    (echo "~A" result)))
+
 (define-internal-page ai-summarize-buffer (&key (id (id (current-buffer))))
     (:title "*AI Summary*")
   "Render the current buffer by creating a new buffer with NYXT schema using Groq."
@@ -358,10 +373,12 @@ User prompt:\n~A" prompt))
           (:h2 "Failed to parse content")
           (:pre json-string)))))
 
-(define-internal-page ai-expand-text (&key (selection (nyxt-user::ffi-buffer-copy (current-buffer))))
+(define-internal-page ai-expand-text (&key (id (id (current-buffer))))
     (:title "*AI Expanded Text*")
   "Expand on the selected text using AI."
-  (let* ((prompt (format nil
+  (let ((buffer (nyxt::buffers-get id)))
+    (let* ((selection (nyxt:ffi-buffer-copy buffer))
+           (prompt (format nil
 "Expand on the following text with more details, examples, and elaboration.
 Format the response using the following JSON schema:
 {
@@ -381,16 +398,103 @@ Format the response using the following JSON schema:
     }
   ]
 }
-Selected text:\n~A" selection))
-         (raw-response (groq-json-completion prompt))
-         (json-string (groq-extract-content raw-response))
-         (parsed-json (safe-parse-json json-string)))
-    (if parsed-json
-        (spinneret:with-html-string
-          (:div (:raw (json-to-html parsed-json))))
-        (spinneret:with-html-string
-          (:h2 "Failed to parse content")
-          (:pre json-string)))))
+Selected text: ~A" selection))
+           (raw-response (groq-json-completion prompt))
+           (json-string (groq-extract-content raw-response))
+           (parsed-json (safe-parse-json json-string)))
+      (if parsed-json
+          (spinneret:with-html-string
+            (:div (:raw (json-to-html parsed-json))))
+          (spinneret:with-html-string
+            (:h2 "Failed to parse content")
+            (:pre json-string))))))
+
+(define-internal-page ai-translate-text (&key (id (id (current-buffer))))
+    (:title "*AI Translated Text*")
+  "Translate the selected text to English using AI"
+  (let ((buffer (nyxt::buffers-get id)))
+    (let* ((selection (nyxt:ffi-buffer-copy buffer))
+           (prompt (format nil
+"Translate the following text to English. Preserve formatting and meaning.
+Format the response using the following JSON schema:
+{
+  \"title\": \"Translation\",
+  \"sections\": [
+    {
+      \"heading\": \"Original Text\", 
+      \"heading-level\": 2,
+      \"content\": \"~A\"
+    },
+    {
+      \"heading\": \"Translated Text\", 
+      \"heading-level\": 2,
+      \"content\": \"...\"
+    },
+    {
+      \"heading\": \"Notes on Translation\", 
+      \"heading-level\": 3,
+      \"list\": [\"...\", \"...\"] (optional, include only if there are important notes)
+    }
+  ]
+}
+" selection))
+           (raw-response (groq-json-completion prompt))
+           (json-string (groq-extract-content raw-response))
+           (parsed-json (safe-parse-json json-string)))
+      (if parsed-json
+          (spinneret:with-html-string
+            (:div (:raw (json-to-html parsed-json))))
+          (spinneret:with-html-string
+            (:h2 "Failed to parse content")
+            (:pre json-string))))))
+
+(define-internal-page ai-explain-code (&key (id (id (current-buffer))))
+    (:title "*AI Code Explanation*")
+  "Explain the selected code using AI."
+  (let ((buffer (nyxt::buffers-get id)))
+    (let* ((selection (nyxt:ffi-buffer-copy buffer))
+           (prompt (format nil
+"Explain the following code in detail. Include purpose, how it works, and any notable techniques or patterns.
+Format the response using the following JSON schema:
+{
+  \"title\": \"Code Explanation\",
+  \"subtitle\": \"Analysis of the provided code\",
+  \"sections\": [
+    {
+      \"heading\": \"Overview\", 
+      \"heading-level\": 2,
+      \"content\": \"...\"
+    },
+    {
+      \"heading\": \"Key Components\", 
+      \"heading-level\": 2,
+      \"list\": [\"...\", \"...\"]
+    },
+    {
+      \"heading\": \"Detailed Explanation\", 
+      \"heading-level\": 2,
+      \"content\": \"...\"
+    },
+    {
+      \"heading\": \"Example Usage\", 
+      \"heading-level\": 2,
+      \"code\": {
+        \"language\": \"...\",
+        \"content\": \"...\"
+      }
+    }
+  ]
+}
+Code to explain:\n~A" selection))
+           (raw-response (groq-json-completion prompt))
+           (json-string (groq-extract-content raw-response))
+           (parsed-json (safe-parse-json json-string)))
+      (if parsed-json
+          (spinneret:with-html-string
+            (:div (:raw (json-to-html parsed-json))))
+          (spinneret:with-html-string
+            (:h2 "Failed to parse content")
+            (:pre json-string))))))
 
 (define-command-global ai-summarize-buffer (&key (buffer (current-buffer)))
   "Summarize the current buffer with AI by creating a new summary buffer."
@@ -400,6 +504,14 @@ Selected text:\n~A" selection))
   "Generate content based on a user-provided prompt."
   (buffer-load-internal-page-focus 'ai-generate-content))
 
-(define-command-global ai-expand-text ()
+(define-command-global ai-expand-text (&key (buffer (current-buffer)))
   "Expand on the selected text using AI."
-  (buffer-load-internal-page-focus 'ai-expand-text))
+  (buffer-load-internal-page-focus 'ai-expand-text :id (id buffer)))
+
+(define-command-global ai-translate-text (&key (buffer (current-buffer)))
+  "Translate the selected text to english using AI."
+  (buffer-load-internal-page-focus 'ai-translate-text :id (id buffer)))
+
+(define-command-global ai-explain-code (&key (buffer (current-buffer)))
+  "Explain the selected code using AI."
+  (buffer-load-internal-page-focus 'ai-explain-code :id (id buffer)))
