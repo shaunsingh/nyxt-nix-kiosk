@@ -38,17 +38,16 @@
 ;;   (percentage))
  
 (defmethod my-format-status-load-status ((status status-buffer))
-  "Render the load status to HTML string"
-  (let ((buffer (current-buffer (window status))))
-    (if (web-buffer-p buffer)
-        (case (slot-value buffer 'status)
-          (:loading "∞ ")
-          (:unloaded "∅ ")
-          (:finished ""))
-        "")))
+  (spinneret:with-html-string
+   (:span (if (and (current-buffer)
+                   (web-buffer-p (current-buffer)))
+              (case (slot-value (current-buffer) 'nyxt::status)
+                    (:unloaded "∅ ")
+                    (:loading "∞ ")
+                    (:finished ""))
+            ""))))
 
 (defmethod my-format-status-url ((status status-buffer))
-  "Format the current URL for the STATUS buffer"
   (let* ((buffer (current-buffer (window status)))
          (url-display (multiple-value-bind (aesthetic safe)
                           (render-url (url buffer))
@@ -68,7 +67,6 @@
         '(nyxt:set-url)))))
 
 (defun enabled-modes-string (buffer)
-  "Only return enabled modes."
   (when (modable-buffer-p buffer)
     (format nil "~{~a~^~%~}" (mapcar #'princ-to-string (serapeum:filter #'enabled-p (modes buffer))))))
 
@@ -107,7 +105,7 @@
             ;;          (%percentage)))
              (:div :id "url"
                    (:raw
-                    ;;(my-format-status-load-status status)
+                    (my-format-status-load-status status)
                     (my-format-status-url status)))
              (:div :id "tabs"
                    (:raw

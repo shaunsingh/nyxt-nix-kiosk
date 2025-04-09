@@ -13,11 +13,11 @@
 
   # enable DRM support on webkit
   webkitgtk-eme = pkgs.webkitgtk_4_1.overrideAttrs (oldAttrs: rec {
-    #     buildInputs =
-    #       oldAttrs.buildInputs
-    #       ++ [
-    #         pkgs.libgpg-error
-    #       ];
+    buildInputs =
+      oldAttrs.buildInputs
+      ++ [
+        pkgs.libgpg-error
+      ];
     cmakeFlags =
       oldAttrs.cmakeFlags
       ++ [

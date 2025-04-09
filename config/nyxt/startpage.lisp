@@ -2,10 +2,10 @@
 
 ;;; STARTPAGE
 
-;; (defvar *logo-svg* 
-;;   (alexandria:read-file-into-string 
-;;    (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
-;;                     (user-homedir-pathname))))
+(defvar *logo-svg* 
+  (alexandria:read-file-into-string 
+   (merge-pathnames #p".config/nyxt/nyoom-engineering.svg" 
+                    (user-homedir-pathname))))
 
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
@@ -237,6 +237,9 @@
                               `("#buttons"
                                 :margin-top "18px"
                                 :font-size "18px")
+                              `("#logo-container"
+                                :margin-top "18px"
+                                :margin-left "9px")
                               `("#copyright"
                                 :font-family ,*mono*
                                 :position "absolute"
@@ -246,8 +249,6 @@
      (spinneret:with-html-string
        (:nstyle dashboard-style)
        (:div :id "container"
-         ;; (:div :id "logo-container"
-         ;;   (:raw *logo-svg*))
          (:h1 "Welcome to " (:span :id "subtitle" "NYXT"))
          (:div :id "buttons"
           (:nbutton :text "Repl"
@@ -260,6 +261,8 @@
            '(nyxt/mode/bookmark:list-bookmarks))
           (:nbutton :text "Annotations"
            '(nyxt/mode/annotate:show-annotations)))
+        (:div :id "logo-container"
+          (:raw *logo-svg*))
         (:div :id "motto"
          "私たちのミッションは"
          (:br)

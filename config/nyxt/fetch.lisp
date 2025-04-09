@@ -38,7 +38,7 @@
         (:br)
         (format nil "WM: ~a" (uiop:getenv "XDG_CURRENT_DESKTOP"))
         (:br)
-        (format nil "THEME: ~a (~a) w/ ~a" (uiop:getenv "GTK_THEME") "oxocarbon" (uiop:getenv "XCURSOR_THEME"))
+        (format nil "THEME: ~a (~a)" (uiop:getenv "GTK_THEME") "oxocarbon")
         (:br)
         (format nil "SHELL: ~a" (uiop:getenv "SHELL"))
         (:br)
